@@ -9,10 +9,12 @@
 // except according to those terms.
 
 //! Represent and parse IEEE EUI-48 Media Access Control addresses
+//! The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an
+//! abbreviation for Extended Unique Identifier.
 
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://doc.rust-lang.org/macaddress/")]
+       html_root_url = "https://doc.rust-lang.org/eui48/")]
 
 #![cfg_attr(test, deny(warnings))]
 

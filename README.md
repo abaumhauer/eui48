@@ -1,12 +1,14 @@
-macaddress
+eui48
 ====
 
-[![Build Status](https://travis-ci.org/rust-lang-nursery/macaddress.svg?branch=master)](https://travis-ci.org/rust-lang-nursery/macaddress)
-[![](http://meritbadge.herokuapp.com/macaddress)](https://crates.io/crates/macaddress)
+[![Build Status](https://travis-ci.org/rust-lang-nursery/eui48.svg?branch=master)](https://travis-ci.org/rust-lang-nursery/eui48)
+[![](http://meritbadge.herokuapp.com/eui48)](https://crates.io/crates/eui48)
 
-A Rust library to represent and parse IEEE MAC-48 media access control addresses.
+A Rust library to represent and parse IEEE EUI-48 also known as MAC-48 media access control addresses.
+The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an abbreviation for Extended Unique Identifier.
 
-[Documentation](https://doc.rust-lang.org/macaddress)
+
+[Documentation](https://doc.rust-lang.org/eui48)
 
 ## Usage
 
@@ -15,25 +17,25 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-macaddress. = "0.1"
+eui48 = "0.1"
 ```
 
 and this to your crate root:
 
 ```rust
-extern crate macaddress;
+extern crate eui48;
 ```
 
 ## Examples
 
-To create a new random (V4) UUID and print it out in hexadecimal form:
+To create a new MAC address and print it out in canonical form:
 
 ```rust
-use macaddress::Uuid;
+use eui48::MacAddress;
 
 fn main() {
-    let my_macaddress = Macaddress::new();
-		    println!("{}", my_macaddress);
+    let mac = MacAddress::new();
+		    println!("{}", mac);
 				}
 				```
 
