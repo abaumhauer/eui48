@@ -51,20 +51,29 @@ pub struct MacAddress {
 }
 
 #[derive(Debug)]
+/// Format to display MacAddress
 pub enum MacAddressFormat {
+    /// Use - notaion
     Canonical,
+    /// Use : notation
     HexString,
+    /// Use . notation
     DotNotation,
+    /// Use 0x notation
     Hexadecimal
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
+/// Parsing errors
 pub enum ParseError {
+    /// Length is incorrect (should be 14 or 17)
     InvalidLength(usize),
+    /// Character not [0-9a-fA-F]|'x'|'-'|':'|'.'
     InvalidCharacter(char, usize)
 }
 
 impl MacAddress {
+    /// Create a new MacAddress from vec![u8; 6]
     pub fn new( eui: Eui48 ) -> MacAddress {
         MacAddress { eui: eui }
     }
@@ -205,30 +214,35 @@ impl MacAddress {
 
 impl FromStr for MacAddress {
     type Err = ParseError;
+    /// Create a MacAddress from String
     fn from_str( us: &str ) -> Result<MacAddress, ParseError> {
         MacAddress::parse_str(us)
     }
 }
 
 impl Default for MacAddress {
+    /// Create a Default MacAddress (00-00-00-00-00-00)
     fn default() -> MacAddress {
         MacAddress::nil()
     }
 }
 
 impl fmt::Debug for MacAddress {
+    /// Debug format for MacAddress is HexString notation
     fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "MacAddress(\"{}\")", self.to_string(MacAddressFormat::HexString))
     }
 }
 
 impl fmt::Display for MacAddress {
+    /// Display format is canonical format (00-00-00-00-00-00)
     fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string(MacAddressFormat::Canonical))
     }
 }
 
 impl PartialEq for MacAddress {
+    /// Define PartialEq as eui equal
     fn eq(&self, other: &MacAddress) -> bool {
         self.eui == other.eui
     }
@@ -237,10 +251,11 @@ impl PartialEq for MacAddress {
 impl Eq for MacAddress {}
 
 impl fmt::Display for ParseError {
+    /// Human readable error strings for ParseError enum
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             ParseError::InvalidLength(found) =>
-                write!(f, "Invalid length; expecting 15 or 18 chars, found {}", found),
+                write!(f, "Invalid length; expecting 14 or 17 chars, found {}", found),
              ParseError::InvalidCharacter(found, pos) =>
                 write!(f, "Invalid character; found `{}` at offset {}", found, pos),
         }
@@ -248,6 +263,7 @@ impl fmt::Display for ParseError {
 }
 
 impl Error for ParseError {
+    /// Human readable description for ParseError enum
     fn description(&self) -> &str {
         "MacAddress parse error"
     }
