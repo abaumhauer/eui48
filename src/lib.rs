@@ -87,6 +87,26 @@ impl MacAddress {
         self.eui.iter().all(|&b| b == 0xFF)
     }
 
+    /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
+    pub fn is_unicast( &self ) -> bool {
+        self.eui[0] & 0 == 0
+    }
+
+    /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
+    pub fn is_multicast( &self ) -> bool {
+        self.eui[0] & 1 != 0
+    }
+
+    /// Returns true if bit 2 of Y is 0 in address 'xY:xx:xx:xx:xx:xx'
+    pub fn is_universal( &self ) -> bool {
+        self.eui[0] & 1 << 1 == 0
+    }
+
+    /// Returns true if bit 2 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
+    pub fn is_local( &self ) -> bool {
+        self.eui[0] & 1 << 1 != 0
+    }
+
     /// Returns a String representation in the format '00-00-00-00-00-00'
     pub fn to_canonical( &self ) -> String {
         format!("{:02x}-{:02x}-{:02x}-{:02x}-{:02x}-{:02x}",
@@ -269,6 +289,32 @@ mod tests {
     fn test_is_broadcast() {
         let broadcast = MacAddress::broadcast();
         assert!(broadcast.is_broadcast());
+    }
+
+    #[test]
+    fn test_is_unicast() {
+        let mac = MacAddress::parse_str("FE:00:5E:AB:CD:EF").unwrap();
+        assert!(mac.is_unicast());
+        assert!(MacAddress::nil().is_unicast());
+    }
+
+    #[test]
+    fn test_is_multicast() {
+        let mac = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
+        assert!(mac.is_multicast());
+        assert!(MacAddress::broadcast().is_multicast());
+    }
+
+    #[test]
+    fn test_is_universal() {
+        let mac = MacAddress::parse_str("15:24:56:AB:CD:EF").unwrap();
+        assert!(mac.is_universal());
+    }
+
+    #[test]
+    fn test_is_local() {
+        let mac = MacAddress::parse_str("16:34:56:AB:CD:EF").unwrap();
+        assert!(mac.is_local());
     }
 
     #[test]
