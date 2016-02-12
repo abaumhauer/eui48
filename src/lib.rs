@@ -210,6 +210,12 @@ impl MacAddress {
             Err(ParseError::InvalidLength(s.len()))     // Something slipped through
         }
     }
+
+
+    /// Return the internal structure as a slice of bytes
+    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
+        &self.eui
+    }
 }
 
 impl FromStr for MacAddress {
@@ -403,6 +409,15 @@ mod tests {
         assert_eq!(MacAddress::parse_str("0x0x0x0x0x0x0x"), Err(InvalidCharacter('x', 3)));
         assert_eq!(MacAddress::parse_str("!0x00000000000"), Err(InvalidCharacter('!', 0)));
         assert_eq!(MacAddress::parse_str("0x00000000000!"), Err(InvalidCharacter('!', 13)));
+    }
+
+    #[test]
+    fn test_as_bytes() {
+        let mac = MacAddress::broadcast();
+        let bytes = mac.as_bytes();
+
+        assert!(bytes.len() == 6);
+        assert!(bytes.iter().all(|&b| b == 0xFF));
     }
 
     #[test]
