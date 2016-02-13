@@ -18,7 +18,6 @@
 
 #![cfg_attr(test, deny(warnings))]
 
-#![allow(unused_imports)]
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
 extern crate serde;
@@ -26,9 +25,6 @@ extern crate serde;
 use std::default::Default;
 use std::error::Error;
 use std::fmt;
-use std::hash;
-use std::iter::repeat;
-use std::mem::{transmute, transmute_copy};
 use std::str::FromStr;
 
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
@@ -275,6 +271,50 @@ impl Error for ParseError {
     }
 }
 
+impl Encodable for MacAddress {
+    /// Encode a MacAddress as canonical form
+    fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
+        e.emit_str(&self.to_canonical())
+    }
+}
+
+impl Decodable for MacAddress {
+    /// Decode a MacAddress from a string in canonical form
+    fn decode<D: Decoder>(d: &mut D) -> Result<MacAddress, D::Error> {
+        let string = try!(d.read_str());
+        string.parse().map_err(|err| d.error(&format!("{}", err)))
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for MacAddress {
+    /// Serialize a MacAddress as canonical form using the serde crate
+    fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
+	    serializer.visit_str(&self.to_canonical())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Deserialize for MacAddress {
+    /// Deserialize a MacAddress from canonical form using the serde crate
+    fn deserialize<D: Deserializer>(deserializer: &mut D) -> Result<Self, D::Error> {
+        struct MacAddressVisitor;
+        impl de::Visitor for MacAddressVisitor {
+            type Value = MacAddress;
+
+            fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<MacAddress, E> {
+                value.parse().map_err(|err| E::syntax(&format!("{}", err)))
+            }
+
+            fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
+                MacAddress::from_bytes(value).ok_or(E::syntax("Expected 6 bytes."))
+            }
+        }
+        deserializer.visit(UuidVisitor)
+    }
+}
+
+// ************** TESTS BEGIN HERE ***************
 #[cfg(test)]
 mod tests {
     use super::{MacAddress, MacAddressFormat, Eui48};
@@ -440,4 +480,30 @@ mod tests {
         assert!(m2 == m1);
     }
 
+    #[test]
+    fn test_serialize() {
+        use rustc_serialize::json;
+
+        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        assert_eq!("\"12-34-56-ab-cd-ef\"", json::encode(&mac).unwrap());
+    }
+
+    #[test]
+    fn test_deserialize() {
+        use rustc_serialize::json;
+
+        let d = "\"12-34-56-AB-CD-EF\"";
+        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        assert_eq!(mac, json::decode(&d).unwrap());
+    }
+
+    #[test]
+    fn test_serialize_roundtrip() {
+        use rustc_serialize::json;
+
+        let m1 = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        let s  = json::encode(&m1).unwrap();
+        let m2 = json::decode(&s).unwrap(); 
+        assert_eq!(m1, m2);
+    }
 }
