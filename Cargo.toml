@@ -7,11 +7,12 @@ readme = "README.md"
 repository = "https://github.com/abaumhauer/eui48"
 homepage = "https://github.com/abaumhauer/eui48"
 documentation = "https://doc.rust-lang.org/eui48"
+keywords = ["EUI-48", "MAC", "MAC-48", "networking", "MACADDR"]
 description = """
 A library to generate and parse IEEE EUI-48 and EUI-64, also known as MAC-48 media access control addresses.
 The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an abbreviation for Extended Unique Identifier.
 """
 
 [dependencies]
-rustc-serialize = "*"
-serde = { version = "*", optional = true }
+rustc-serialize = "0.3"
+serde = { version = "0.6", optional = true }
