@@ -24,6 +24,7 @@ use std::default::Default;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
+use std::cmp::Ordering;
 
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 #[cfg(feature = "serde")]
@@ -249,6 +250,20 @@ impl PartialEq for MacAddress {
 }
 
 impl Eq for MacAddress {}
+
+// Added so MacAddress can be used in ordered lists
+
+impl Ord for MacAddress {
+    fn cmp(&self, other: &MacAddress) -> Ordering {
+        self.eui.cmp(&other.eui)
+    }
+}
+
+impl PartialOrd for MacAddress {
+    fn partial_cmp(&self, other: &MacAddress) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 impl fmt::Display for ParseError {
     /// Human readable error strings for ParseError enum
