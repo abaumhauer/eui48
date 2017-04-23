@@ -24,6 +24,7 @@ use std::default::Default;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
+use std::cmp::Ordering;
 
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 #[cfg(feature = "serde")]
@@ -34,14 +35,14 @@ pub const EUI48LEN: usize = 6;
 pub type Eui48 = [u8; EUI48LEN];
 
 /// A 64-bit (8 byte) buffer containing the EUI address
-pub const EUI64LEN: usize =  8;
+pub const EUI64LEN: usize = 8;
 pub type Eui64 = [u8; EUI64LEN];
 
 /// A MAC address (EUI-48)
 #[derive(Copy, Clone)]
 pub struct MacAddress {
-/// The 48-bit number stored in 6 bytes
-    eui: Eui48
+    /// The 48-bit number stored in 6 bytes
+    eui: Eui48,
 }
 
 #[derive(Debug)]
@@ -54,7 +55,7 @@ pub enum MacAddressFormat {
     /// Use . notation
     DotNotation,
     /// Use 0x notation
-    Hexadecimal
+    Hexadecimal,
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -63,12 +64,12 @@ pub enum ParseError {
     /// Length is incorrect (should be 14 or 17)
     InvalidLength(usize),
     /// Character not [0-9a-fA-F]|'x'|'-'|':'|'.'
-    InvalidCharacter(char, usize)
+    InvalidCharacter(char, usize),
 }
 
 impl MacAddress {
     /// Create a new MacAddress from vec![u8; 6]
-    pub fn new( eui: Eui48 ) -> MacAddress {
+    pub fn new(eui: Eui48) -> MacAddress {
         MacAddress { eui: eui }
     }
 
@@ -83,125 +84,142 @@ impl MacAddress {
     }
 
     /// Returns true if the address is '00:00:00:00:00:00'
-    pub fn is_nil( &self ) -> bool {
+    pub fn is_nil(&self) -> bool {
         self.eui.iter().all(|&b| b == 0)
     }
 
     /// Returns true if the address is 'ff:ff:ff:ff:ff:ff'
-    pub fn is_broadcast( &self ) -> bool {
+    pub fn is_broadcast(&self) -> bool {
         self.eui.iter().all(|&b| b == 0xFF)
     }
 
     /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
-    pub fn is_unicast( &self ) -> bool {
+    pub fn is_unicast(&self) -> bool {
         self.eui[0] & 0 == 0
     }
 
     /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
-    pub fn is_multicast( &self ) -> bool {
+    pub fn is_multicast(&self) -> bool {
         self.eui[0] & 1 != 0
     }
 
     /// Returns true if bit 2 of Y is 0 in address 'xY:xx:xx:xx:xx:xx'
-    pub fn is_universal( &self ) -> bool {
+    pub fn is_universal(&self) -> bool {
         self.eui[0] & 1 << 1 == 0
     }
 
     /// Returns true if bit 2 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
-    pub fn is_local( &self ) -> bool {
+    pub fn is_local(&self) -> bool {
         self.eui[0] & 1 << 1 != 0
     }
 
     /// Returns a String representation in the format '00-00-00-00-00-00'
-    pub fn to_canonical( &self ) -> String {
+    pub fn to_canonical(&self) -> String {
         format!("{:02x}-{:02x}-{:02x}-{:02x}-{:02x}-{:02x}",
-                 self.eui[0], self.eui[1], self.eui[2],
-                 self.eui[3], self.eui[4], self.eui[5])
+                self.eui[0],
+                self.eui[1],
+                self.eui[2],
+                self.eui[3],
+                self.eui[4],
+                self.eui[5])
     }
 
     /// Returns a String representation in the format '00:00:00:00:00:00'
-    pub fn to_hex_string( &self ) -> String {
+    pub fn to_hex_string(&self) -> String {
         format!("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-                 self.eui[0], self.eui[1], self.eui[2],
-                 self.eui[3], self.eui[4], self.eui[5])
+                self.eui[0],
+                self.eui[1],
+                self.eui[2],
+                self.eui[3],
+                self.eui[4],
+                self.eui[5])
     }
 
     /// Returns a String representation in the format '0000.0000.0000'
-    pub fn to_dot_string( &self ) -> String {
+    pub fn to_dot_string(&self) -> String {
         format!("{:02x}{:02x}.{:02x}{:02x}.{:02x}{:02x}",
-                 self.eui[0], self.eui[1], self.eui[2],
-                 self.eui[3], self.eui[4], self.eui[5])
+                self.eui[0],
+                self.eui[1],
+                self.eui[2],
+                self.eui[3],
+                self.eui[4],
+                self.eui[5])
     }
 
     /// Returns a String representation in the format '0x000000000000'
-    pub fn to_hexadecimal( &self ) -> String {
+    pub fn to_hexadecimal(&self) -> String {
         format!("0x{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                 self.eui[0], self.eui[1], self.eui[2],
-                 self.eui[3], self.eui[4], self.eui[5])
+                self.eui[0],
+                self.eui[1],
+                self.eui[2],
+                self.eui[3],
+                self.eui[4],
+                self.eui[5])
     }
 
     /// Returns a String in the format selected by fmt
-    pub fn to_string( &self, fmt: MacAddressFormat ) -> String {
+    pub fn to_string(&self, fmt: MacAddressFormat) -> String {
         match fmt {
-            MacAddressFormat::Canonical    => self.to_canonical(),
-            MacAddressFormat::HexString    => self.to_hex_string(),
-            MacAddressFormat::DotNotation  => self.to_dot_string(),
-            MacAddressFormat::Hexadecimal  => self.to_hexadecimal()
+            MacAddressFormat::Canonical => self.to_canonical(),
+            MacAddressFormat::HexString => self.to_hex_string(),
+            MacAddressFormat::DotNotation => self.to_dot_string(),
+            MacAddressFormat::Hexadecimal => self.to_hexadecimal(),
         }
     }
 
     /// Parses a String representation from any format supported
-    pub fn parse_str( s: &str ) -> Result<MacAddress, ParseError> {
-        let mut offset = 0;         // Offset into the u8 Eui48 vector
-        let mut hn: bool = false;   // Have we seen the high nibble yet?
+    pub fn parse_str(s: &str) -> Result<MacAddress, ParseError> {
+        let mut offset = 0; // Offset into the u8 Eui48 vector
+        let mut hn: bool = false; // Have we seen the high nibble yet?
         let mut eui: Eui48 = [0; EUI48LEN];
 
         match s.len() {
-            14|17   => {},  // The formats are all 12 characters with 2 or 5 delims
-            _       => return Err(ParseError::InvalidLength(s.len()))
+            14 | 17 => {}  // The formats are all 12 characters with 2 or 5 delims
+            _ => return Err(ParseError::InvalidLength(s.len())),
         }
 
         for (idx, c) in s.chars().enumerate() {
-            if offset >= EUI48LEN {     // We shouln't still be parsing
-                return Err(ParseError::InvalidLength(s.len()))
+            if offset >= EUI48LEN {
+                // We shouln't still be parsing
+                return Err(ParseError::InvalidLength(s.len()));
             }
 
             match c {
-                '0'...'9'|'a'...'f'|'A'...'F'   => {
+                '0'...'9' | 'a'...'f' | 'A'...'F' => {
                     match hn {
-                        false   =>  { 
+                        false => {
                             // We will match '0' and run this even if the format is 0x
-                            hn = true;  // Parsed the high nibble
-                            eui[offset] = ( c.to_digit(16).unwrap() as u8 ) << 4;
-                        },
-                        true    => {
+                            hn = true; // Parsed the high nibble
+                            eui[offset] = (c.to_digit(16).unwrap() as u8) << 4;
+                        }
+                        true => {
                             hn = false; // Parsed the low nibble
                             eui[offset] += c.to_digit(16).unwrap() as u8;
                             offset += 1;
                         }
                     }
-                },
-                '-'|':'|'.' => { },
-                'x'|'X'     => {
+                }
+                '-' | ':' | '.' => {}
+                'x' | 'X' => {
                     match idx {
-                        1   => {
+                        1 => {
                             // If idx = 1, we are possibly parsing 0x1234567890ab format
                             // Reset the offset to zero to ignore the first two characters
                             offset = 0;
                             hn = false;
-                        },
-                        _   => return Err(ParseError::InvalidCharacter(c, idx)) 
+                        }
+                        _ => return Err(ParseError::InvalidCharacter(c, idx)),
                     }
                 }
-                _           => return Err(ParseError::InvalidCharacter(c, idx))
+                _ => return Err(ParseError::InvalidCharacter(c, idx)),
             }
         }
 
-        if offset == EUI48LEN {         // A correctly parsed value is exactly 6 u8s
+        if offset == EUI48LEN {
+            // A correctly parsed value is exactly 6 u8s
             Ok(MacAddress::new(eui))
-        }
-        else {
-            Err(ParseError::InvalidLength(s.len()))     // Something slipped through
+        } else {
+            Err(ParseError::InvalidLength(s.len())) // Something slipped through
         }
     }
 
@@ -215,7 +233,7 @@ impl MacAddress {
 impl FromStr for MacAddress {
     type Err = ParseError;
     /// Create a MacAddress from String
-    fn from_str( us: &str ) -> Result<MacAddress, ParseError> {
+    fn from_str(us: &str) -> Result<MacAddress, ParseError> {
         MacAddress::parse_str(us)
     }
 }
@@ -229,14 +247,16 @@ impl Default for MacAddress {
 
 impl fmt::Debug for MacAddress {
     /// Debug format for MacAddress is HexString notation
-    fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "MacAddress(\"{}\")", self.to_string(MacAddressFormat::HexString))
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "MacAddress(\"{}\")",
+               self.to_string(MacAddressFormat::HexString))
     }
 }
 
 impl fmt::Display for MacAddress {
     /// Display format is canonical format (00-00-00-00-00-00)
-    fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string(MacAddressFormat::Canonical))
     }
 }
@@ -250,14 +270,32 @@ impl PartialEq for MacAddress {
 
 impl Eq for MacAddress {}
 
+// Added so MacAddress can be used in ordered lists
+
+impl Ord for MacAddress {
+    fn cmp(&self, other: &MacAddress) -> Ordering {
+        self.eui.cmp(&other.eui)
+    }
+}
+
+impl PartialOrd for MacAddress {
+    fn partial_cmp(&self, other: &MacAddress) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl fmt::Display for ParseError {
     /// Human readable error strings for ParseError enum
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ParseError::InvalidLength(found) =>
-                write!(f, "Invalid length; expecting 14 or 17 chars, found {}", found),
-             ParseError::InvalidCharacter(found, pos) =>
-                write!(f, "Invalid character; found `{}` at offset {}", found, pos),
+            ParseError::InvalidLength(found) => {
+                write!(f,
+                       "Invalid length; expecting 14 or 17 chars, found {}",
+                       found)
+            }
+            ParseError::InvalidCharacter(found, pos) => {
+                write!(f, "Invalid character; found `{}` at offset {}", found, pos)
+            }
         }
     }
 }
@@ -280,7 +318,9 @@ impl Decodable for MacAddress {
     /// Decode a MacAddress from a string in canonical form
     fn decode<D: Decoder>(d: &mut D) -> Result<MacAddress, D::Error> {
         let string = try!(d.read_str());
-        string.parse().map_err(|err| d.error(&format!("{}", err)))
+        string
+            .parse()
+            .map_err(|err| d.error(&format!("{}", err)))
     }
 }
 
@@ -288,7 +328,7 @@ impl Decodable for MacAddress {
 impl Serialize for MacAddress {
     /// Serialize a MacAddress as canonical form using the serde crate
     fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
-	    serializer.visit_str(&self.to_canonical())
+        serializer.visit_str(&self.to_canonical())
     }
 }
 
@@ -301,7 +341,9 @@ impl Deserialize for MacAddress {
             type Value = MacAddress;
 
             fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<MacAddress, E> {
-                value.parse().map_err(|err| E::syntax(&format!("{}", err)))
+                value
+                    .parse()
+                    .map_err(|err| E::syntax(&format!("{}", err)))
             }
 
             fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
@@ -319,7 +361,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let eui: Eui48 = [ 0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF ];
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
 
         assert!(mac.eui[0..5] == eui[0..5]);
@@ -381,42 +423,46 @@ mod tests {
 
     #[test]
     fn test_to_canonical() {
-        let eui: Eui48 = [ 0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF ];
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
-        let s   = format!("{}", mac);
+        let s = format!("{}", mac);
         assert_eq!(s, mac.to_canonical());
         assert_eq!("12-34-56-ab-cd-ef", mac.to_canonical());
     }
 
     #[test]
     fn test_to_hex_string() {
-        let eui: Eui48 = [ 0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF ];
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
         assert_eq!("12:34:56:ab:cd:ef", mac.to_hex_string());
     }
 
     #[test]
     fn test_to_dot_string() {
-        let eui: Eui48 = [ 0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF ];
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
         assert_eq!("1234.56ab.cdef", mac.to_dot_string());
     }
 
     #[test]
     fn test_to_hexadecimal() {
-        let eui: Eui48 = [ 0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF ];
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
         assert_eq!("0x123456abcdef", mac.to_hexadecimal());
     }
 
     #[test]
     fn test_to_string() {
-        let eui: Eui48 = [ 0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF ];
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
-        assert_eq!("0x123456abcdef", mac.to_string(MacAddressFormat::Hexadecimal));
-        assert_eq!("1234.56ab.cdef", mac.to_string(MacAddressFormat::DotNotation));
-        assert_eq!("12:34:56:ab:cd:ef", mac.to_string(MacAddressFormat::HexString));
-        assert_eq!("12-34-56-ab-cd-ef", mac.to_string(MacAddressFormat::Canonical));
+        assert_eq!("0x123456abcdef",
+                   mac.to_string(MacAddressFormat::Hexadecimal));
+        assert_eq!("1234.56ab.cdef",
+                   mac.to_string(MacAddressFormat::DotNotation));
+        assert_eq!("12:34:56:ab:cd:ef",
+                   mac.to_string(MacAddressFormat::HexString));
+        assert_eq!("12-34-56-ab-cd-ef",
+                   mac.to_string(MacAddressFormat::Canonical));
     }
 
     #[test]
@@ -424,29 +470,50 @@ mod tests {
         use super::ParseError::*;
 
         assert_eq!("0x123456abcdef",
-                   MacAddress::parse_str("0x123456ABCDEF").unwrap().to_hexadecimal());
+                   MacAddress::parse_str("0x123456ABCDEF")
+                       .unwrap()
+                       .to_hexadecimal());
         assert_eq!("1234.56ab.cdef",
-                   MacAddress::parse_str("1234.56AB.CDEF").unwrap().to_dot_string());
+                   MacAddress::parse_str("1234.56AB.CDEF")
+                       .unwrap()
+                       .to_dot_string());
         assert_eq!("12:34:56:ab:cd:ef",
-                   MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap().to_hex_string());
+                   MacAddress::parse_str("12:34:56:AB:CD:EF")
+                       .unwrap()
+                       .to_hex_string());
         assert_eq!("12-34-56-ab-cd-ef",
-                   MacAddress::parse_str("12-34-56-AB-CD-EF").unwrap().to_canonical());
+                   MacAddress::parse_str("12-34-56-AB-CD-EF")
+                       .unwrap()
+                       .to_canonical());
         // Test error parsing
         assert_eq!(MacAddress::parse_str(""), Err(InvalidLength(0)));
         assert_eq!(MacAddress::parse_str("0"), Err(InvalidLength(1)));
-        assert_eq!(MacAddress::parse_str("123456ABCDEF"), Err(InvalidLength(12)));
-        assert_eq!(MacAddress::parse_str("1234567890ABCD"), Err(InvalidLength(14)));
-        assert_eq!(MacAddress::parse_str("1234567890ABCDEF"), Err(InvalidLength(16)));
-        assert_eq!(MacAddress::parse_str("01234567890ABCDEF"), Err(InvalidLength(17)));
-        assert_eq!(MacAddress::parse_str("0x1234567890A"), Err(InvalidLength(13)));
-        assert_eq!(MacAddress::parse_str("0x1234567890ABCDE"), Err(InvalidLength(17)));
-        assert_eq!(MacAddress::parse_str("0x00:00:00:00:"), Err(InvalidLength(14)));
-        assert_eq!(MacAddress::parse_str("0x00:00:00:00:00:"), Err(InvalidLength(17)));
-        assert_eq!(MacAddress::parse_str("::::::::::::::"), Err(InvalidLength(14)));
-        assert_eq!(MacAddress::parse_str(":::::::::::::::::"), Err(InvalidLength(17)));
-        assert_eq!(MacAddress::parse_str("0x0x0x0x0x0x0x"), Err(InvalidCharacter('x', 3)));
-        assert_eq!(MacAddress::parse_str("!0x00000000000"), Err(InvalidCharacter('!', 0)));
-        assert_eq!(MacAddress::parse_str("0x00000000000!"), Err(InvalidCharacter('!', 13)));
+        assert_eq!(MacAddress::parse_str("123456ABCDEF"),
+                   Err(InvalidLength(12)));
+        assert_eq!(MacAddress::parse_str("1234567890ABCD"),
+                   Err(InvalidLength(14)));
+        assert_eq!(MacAddress::parse_str("1234567890ABCDEF"),
+                   Err(InvalidLength(16)));
+        assert_eq!(MacAddress::parse_str("01234567890ABCDEF"),
+                   Err(InvalidLength(17)));
+        assert_eq!(MacAddress::parse_str("0x1234567890A"),
+                   Err(InvalidLength(13)));
+        assert_eq!(MacAddress::parse_str("0x1234567890ABCDE"),
+                   Err(InvalidLength(17)));
+        assert_eq!(MacAddress::parse_str("0x00:00:00:00:"),
+                   Err(InvalidLength(14)));
+        assert_eq!(MacAddress::parse_str("0x00:00:00:00:00:"),
+                   Err(InvalidLength(17)));
+        assert_eq!(MacAddress::parse_str("::::::::::::::"),
+                   Err(InvalidLength(14)));
+        assert_eq!(MacAddress::parse_str(":::::::::::::::::"),
+                   Err(InvalidLength(17)));
+        assert_eq!(MacAddress::parse_str("0x0x0x0x0x0x0x"),
+                   Err(InvalidCharacter('x', 3)));
+        assert_eq!(MacAddress::parse_str("!0x00000000000"),
+                   Err(InvalidCharacter('!', 0)));
+        assert_eq!(MacAddress::parse_str("0x00000000000!"),
+                   Err(InvalidCharacter('!', 13)));
     }
 
     #[test]
@@ -500,8 +567,8 @@ mod tests {
         use rustc_serialize::json;
 
         let m1 = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
-        let s  = json::encode(&m1).unwrap();
-        let m2 = json::decode(&s).unwrap(); 
+        let s = json::encode(&m1).unwrap();
+        let m2 = json::decode(&s).unwrap();
         assert_eq!(m1, m2);
     }
 }

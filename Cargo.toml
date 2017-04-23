@@ -1,7 +1,8 @@
 [package]
 name = "eui48"
-version = "0.1.0"
-authors = ["Andrew Baumhauer <andy@baumhauer.us>"]
+version = "0.2.0"
+authors = ["Andrew Baumhauer <andy@baumhauer.us>",
+					 "<rlcomstock3@github.com>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/abaumhauer/eui48"
