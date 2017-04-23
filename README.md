@@ -53,5 +53,6 @@ fn main() {
 [Wikipedia: MAC address](https://en.wikipedia.org/wiki/MAC_address)
 
 ## Authors
-0.1 - Andrew Baumhauer
-0.2 - rlcomstock3 - Added support for btree keys
+- 0.1 Andrew Baumhauer - Initial design
+- 0.2 rlcomstock3 - Added support for btree keys
+- 0.3 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Serde 1.0 support
