@@ -67,9 +67,23 @@ pub enum ParseError {
 }
 
 impl MacAddress {
-    /// Create a new MacAddress from vec![u8; 6]
+    /// Create a new MacAddress from `[u8; 6]`.
     pub fn new( eui: Eui48 ) -> MacAddress {
         MacAddress { eui: eui }
+    }
+
+    /// Create a new MacAddress from a byte slice.
+    ///
+    /// Returns an error (without any description) if the slice doesn't have the proper length.
+    pub fn from_bytes( bytes: &[u8] ) -> Result<Self, ()> {
+        if bytes.len() != EUI48LEN {
+            return Err(());
+        }
+        let mut input: [u8; EUI48LEN] = Default::default();
+        for i in 0..EUI48LEN {
+            input[i] = bytes[i];
+        }
+        Ok(Self::new(input))
     }
 
     /// Returns empty EUI-48 address
@@ -304,11 +318,11 @@ impl Deserialize for MacAddress {
                 value.parse().map_err(|err| E::syntax(&format!("{}", err)))
             }
 
-            fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
-                MacAddress::from_bytes(value).ok_or(E::syntax("Expected 6 bytes."))
+            fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<MacAddress, E> {
+                MacAddress::from_bytes(value).map_err(|_| E::syntax("Expected 6 bytes."))
             }
         }
-        deserializer.visit(UuidVisitor)
+        deserializer.visit(MacAddressVisitor)
     }
 }
 
