@@ -301,28 +301,33 @@ impl Decodable for MacAddress {
 #[cfg(feature = "serde")]
 impl Serialize for MacAddress {
     /// Serialize a MacAddress as canonical form using the serde crate
-    fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
-	    serializer.visit_str(&self.to_canonical())
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+	    serializer.serialize_str(&self.to_canonical())
     }
 }
 
 #[cfg(feature = "serde")]
-impl Deserialize for MacAddress {
+impl<'de> Deserialize<'de> for MacAddress {
     /// Deserialize a MacAddress from canonical form using the serde crate
-    fn deserialize<D: Deserializer>(deserializer: &mut D) -> Result<Self, D::Error> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct MacAddressVisitor;
-        impl de::Visitor for MacAddressVisitor {
+        impl<'de> de::Visitor<'de> for MacAddressVisitor {
             type Value = MacAddress;
 
-            fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<MacAddress, E> {
-                value.parse().map_err(|err| E::syntax(&format!("{}", err)))
+            fn visit_str<E: de::Error>(self, value: &str) -> Result<MacAddress, E> {
+                value.parse().map_err(|err| E::custom(&format!("{}", err)))
             }
 
-            fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<MacAddress, E> {
-                MacAddress::from_bytes(value).map_err(|_| E::syntax("Expected 6 bytes."))
+            fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<MacAddress, E> {
+                MacAddress::from_bytes(value).map_err(|_| E::invalid_length(value.len(), &self))
+            }
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                write!(formatter,
+                       "either a string representation of a MAC address or 6-element byte array")
             }
         }
-        deserializer.visit(MacAddressVisitor)
+        deserializer.deserialize_str(MacAddressVisitor)
     }
 }
 
