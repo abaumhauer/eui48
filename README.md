@@ -16,7 +16,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-eui48 = "0.1"
+eui48 = "0.3"
 ```
 
 and this to your crate root:
