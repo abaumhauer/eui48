@@ -19,6 +19,7 @@
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
 extern crate serde;
+extern crate regex;
 
 use std::default::Default;
 use std::error::Error;
@@ -29,6 +30,7 @@ use std::cmp::Ordering;
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 #[cfg(feature = "serde")]
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use regex::Regex;
 
 /// A 48-bit (6 byte) buffer containing the EUI address
 pub const EUI48LEN: usize = 6;
@@ -61,10 +63,10 @@ pub enum MacAddressFormat {
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 /// Parsing errors
 pub enum ParseError {
-    /// Length is incorrect (should be 14 or 17)
+    /// Length is incorrect (should be 11 to 17)
     InvalidLength(usize),
-    /// Character not [0-9a-fA-F]|'x'|'-'|':'|'.'
-    InvalidCharacter(char, usize),
+    /// The input string is invalid, usize bytes were found, and we put up to 6 bytes into Eui48
+    InvalidByteCount(usize, Eui48),
 }
 
 impl MacAddress {
@@ -183,58 +185,30 @@ impl MacAddress {
 
     /// Parses a String representation from any format supported
     pub fn parse_str(s: &str) -> Result<MacAddress, ParseError> {
-        let mut offset = 0; // Offset into the u8 Eui48 vector
-        let mut hn: bool = false; // Have we seen the high nibble yet?
+
+        let re = Regex::new("(0x)?([0-9a-fA-F]{1,2})[:.-]?").unwrap();
         let mut eui: Eui48 = [0; EUI48LEN];
 
         match s.len() {
-            14 | 17 => {}  // The formats are all 12 characters with 2 or 5 delims
-            _ => return Err(ParseError::InvalidLength(s.len())),
+            11...17 => {},
+            _ =>  { return Err(ParseError::InvalidLength(s.len())); },
         }
 
-        for (idx, c) in s.chars().enumerate() {
-            if offset >= EUI48LEN {
-                // We shouln't still be parsing
-                return Err(ParseError::InvalidLength(s.len()));
+        let mut i = 0;
+        for caps in re.captures_iter(s) {
+            // Fill the array and keep counting for InvalidByteCount
+            if i < EUI48LEN {
+                let matched_byte = caps.get(2).unwrap().as_str();
+                eui[i] = u8::from_str_radix(matched_byte, 16).unwrap();
             }
-
-            match c {
-                '0'...'9' | 'a'...'f' | 'A'...'F' => {
-                    match hn {
-                        false => {
-                            // We will match '0' and run this even if the format is 0x
-                            hn = true; // Parsed the high nibble
-                            eui[offset] = (c.to_digit(16).unwrap() as u8) << 4;
-                        }
-                        true => {
-                            hn = false; // Parsed the low nibble
-                            eui[offset] += c.to_digit(16).unwrap() as u8;
-                            offset += 1;
-                        }
-                    }
-                }
-                '-' | ':' | '.' => {}
-                'x' | 'X' => {
-                    match idx {
-                        1 => {
-                            // If idx = 1, we are possibly parsing 0x1234567890ab format
-                            // Reset the offset to zero to ignore the first two characters
-                            offset = 0;
-                            hn = false;
-                        }
-                        _ => return Err(ParseError::InvalidCharacter(c, idx)),
-                    }
-                }
-                _ => return Err(ParseError::InvalidCharacter(c, idx)),
-            }
+            i += 1;
         }
 
-        if offset == EUI48LEN {
-            // A correctly parsed value is exactly 6 u8s
-            Ok(MacAddress::new(eui))
-        } else {
-            Err(ParseError::InvalidLength(s.len())) // Something slipped through
+        if i != EUI48LEN {
+            return Err(ParseError::InvalidByteCount(i, eui));
         }
+
+        return Ok(MacAddress::new(eui));
     }
 
 
@@ -304,11 +278,14 @@ impl fmt::Display for ParseError {
         match *self {
             ParseError::InvalidLength(found) => {
                 write!(f,
-                       "Invalid length; expecting 14 or 17 chars, found {}",
+                       "Invalid length; expecting 11 to 17 chars, found {}",
                        found)
             }
-            ParseError::InvalidCharacter(found, pos) => {
-                write!(f, "Invalid character; found `{}` at offset {}", found, pos)
+            ParseError::InvalidByteCount(found, eui) => {
+                write!(f,
+                       "Invalid byte count; Matched `{}` bytes ({:?})",
+                       found,
+                       &eui[..found])
             }
         }
     }
@@ -490,49 +467,57 @@ mod tests {
 
         assert_eq!("0x123456abcdef",
                    MacAddress::parse_str("0x123456ABCDEF")
-                       .unwrap()
-                       .to_hexadecimal());
+                   .unwrap()
+                   .to_hexadecimal());
         assert_eq!("1234.56ab.cdef",
                    MacAddress::parse_str("1234.56AB.CDEF")
-                       .unwrap()
-                       .to_dot_string());
+                   .unwrap()
+                   .to_dot_string());
         assert_eq!("12:34:56:ab:cd:ef",
                    MacAddress::parse_str("12:34:56:AB:CD:EF")
-                       .unwrap()
-                       .to_hex_string());
+                   .unwrap()
+                   .to_hex_string());
         assert_eq!("12-34-56-ab-cd-ef",
                    MacAddress::parse_str("12-34-56-AB-CD-EF")
-                       .unwrap()
-                       .to_canonical());
+                   .unwrap()
+                   .to_canonical());
+        assert_eq!("12-34-56-78-90-0a",
+                   MacAddress::parse_str("0x1234567890A")
+                   .unwrap()
+                   .to_canonical());
+        assert_eq!("12-34-56-ab-cd-ef",
+                   MacAddress::parse_str("123456ABCDEF")
+                   .unwrap()
+                   .to_canonical());
+        assert_eq!("00-00-00-00-00-00",
+            MacAddress::parse_str("!0x00000000000")
+            .unwrap()
+            .to_canonical());
+        assert_eq!("00-00-00-00-00-00",
+            MacAddress::parse_str("0x00000000000!")
+            .unwrap()
+            .to_canonical());
         // Test error parsing
         assert_eq!(MacAddress::parse_str(""), Err(InvalidLength(0)));
         assert_eq!(MacAddress::parse_str("0"), Err(InvalidLength(1)));
-        assert_eq!(MacAddress::parse_str("123456ABCDEF"),
-                   Err(InvalidLength(12)));
         assert_eq!(MacAddress::parse_str("1234567890ABCD"),
-                   Err(InvalidLength(14)));
+        Err(InvalidByteCount(7, [0x12, 0x34, 0x56, 0x78, 0x90, 0xAB])));
         assert_eq!(MacAddress::parse_str("1234567890ABCDEF"),
-                   Err(InvalidLength(16)));
+        Err(InvalidByteCount(8, [0x12, 0x34, 0x56, 0x78, 0x90, 0xAB])));
         assert_eq!(MacAddress::parse_str("01234567890ABCDEF"),
-                   Err(InvalidLength(17)));
-        assert_eq!(MacAddress::parse_str("0x1234567890A"),
-                   Err(InvalidLength(13)));
+        Err(InvalidByteCount(9, [0x01, 0x23, 0x45, 0x67, 0x89, 0x0A])));
         assert_eq!(MacAddress::parse_str("0x1234567890ABCDE"),
-                   Err(InvalidLength(17)));
-        assert_eq!(MacAddress::parse_str("0x00:00:00:00:"),
-                   Err(InvalidLength(14)));
-        assert_eq!(MacAddress::parse_str("0x00:00:00:00:00:"),
-                   Err(InvalidLength(17)));
+        Err(InvalidByteCount(8, [0x12, 0x34, 0x56, 0x78, 0x90, 0xAB])));
+        assert_eq!(MacAddress::parse_str("0x00:01:02:03:"),
+        Err(InvalidByteCount(4, [0, 1, 2, 3, 0, 0])));
+        assert_eq!(MacAddress::parse_str("0x00:01:02:03:04:"),
+        Err(InvalidByteCount(5, [0, 1, 2, 3, 4, 0])));
         assert_eq!(MacAddress::parse_str("::::::::::::::"),
-                   Err(InvalidLength(14)));
+        Err(InvalidByteCount(0, [0, 0, 0, 0, 0, 0])));
         assert_eq!(MacAddress::parse_str(":::::::::::::::::"),
-                   Err(InvalidLength(17)));
+        Err(InvalidByteCount(0, [0, 0, 0, 0, 0, 0])));
         assert_eq!(MacAddress::parse_str("0x0x0x0x0x0x0x"),
-                   Err(InvalidCharacter('x', 3)));
-        assert_eq!(MacAddress::parse_str("!0x00000000000"),
-                   Err(InvalidCharacter('!', 0)));
-        assert_eq!(MacAddress::parse_str("0x00000000000!"),
-                   Err(InvalidCharacter('!', 13)));
+        Err(InvalidByteCount(4, [0, 0, 0, 0, 0, 0])));
     }
 
     #[test]
