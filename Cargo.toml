@@ -17,5 +17,5 @@ abbreviation for Extended Unique Identifier.
 """
 
 [dependencies]
-rustc-serialize = "0.3"
-serde = { version = "~1", optional = true }
+rustc-serialize = "0.3.24"
+serde = { version = "1.0.27", optional = true }
