@@ -1,8 +1,9 @@
 eui48
 ====
 
-[![Build Status](https://travis-ci.org/rust-lang-nursery/eui48.svg?branch=master)](https://travis-ci.org/rust-lang-nursery/eui48)
-[![](http://meritbadge.herokuapp.com/eui48)](https://crates.io/crates/eui48)
+[![Build Status](https://travis-ci.org/abaumhauer/eui48.svg?branch=master)](https://travis-ci.org/abaumhauer/eui48)
+[![Documentation](https://docs.rs/abaumhauer/badge.svg)](https://docs.rs/eui48/)
+[![Crate](https://img.shields.io/crates/v/eui48.svg)](https://crates.io/crates/eui48)
 
 A Rust library to represent and parse IEEE EUI-48 also known as MAC-48 media access control addresses. The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an abbreviation for Extended Unique Identifier.
 
@@ -16,7 +17,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-eui48 = "0.3.1"
+eui48 = "0.3.2"
 ```
 
 and this to your crate root:
