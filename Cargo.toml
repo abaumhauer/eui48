@@ -1,6 +1,6 @@
 [package]
 name = "eui48"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Andrew Baumhauer <andy@baumhauer.us>",
 					 "<rlcomstock3@github.com>",
 					 "Michal 'vorner' Vaner <vorner+github@vorner.cz>" ]
@@ -8,7 +8,7 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/abaumhauer/eui48"
 homepage = "https://github.com/abaumhauer/eui48"
-documentation = "https://doc.rust-lang.org/eui48"
+documentation = "https://docs.rs/eui48/0.3.1/eui48/"
 keywords = ["EUI-48", "MAC", "MAC-48", "networking", "MACADDR"]
 description = """
 A library to generate and parse IEEE EUI-48 and EUI-64, also known as MAC-48 media access
