@@ -24,7 +24,6 @@ use std::default::Default;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
-use std::cmp::Ordering;
 
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 #[cfg(feature = "serde")]
@@ -39,13 +38,13 @@ pub const EUI64LEN: usize = 8;
 pub type Eui64 = [u8; EUI64LEN];
 
 /// A MAC address (EUI-48)
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct MacAddress {
     /// The 48-bit number stored in 6 bytes
     eui: Eui48,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Format to display MacAddress
 pub enum MacAddressFormat {
     /// Use - notaion
@@ -58,7 +57,7 @@ pub enum MacAddressFormat {
     Hexadecimal,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Ord, PartialOrd, Hash)]
 /// Parsing errors
 pub enum ParseError {
     /// Length is incorrect (should be 14 or 17)
@@ -272,29 +271,6 @@ impl fmt::Display for MacAddress {
     /// Display format is canonical format (00-00-00-00-00-00)
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string(MacAddressFormat::Canonical))
-    }
-}
-
-impl PartialEq for MacAddress {
-    /// Define PartialEq as eui equal
-    fn eq(&self, other: &MacAddress) -> bool {
-        self.eui == other.eui
-    }
-}
-
-impl Eq for MacAddress {}
-
-// Added so MacAddress can be used in ordered lists
-
-impl Ord for MacAddress {
-    fn cmp(&self, other: &MacAddress) -> Ordering {
-        self.eui.cmp(&other.eui)
-    }
-}
-
-impl PartialOrd for MacAddress {
-    fn partial_cmp(&self, other: &MacAddress) -> Option<Ordering> {
-        Some(self.cmp(other))
     }
 }
 
