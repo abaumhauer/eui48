@@ -7,7 +7,7 @@ eui48
 A Rust library to represent and parse IEEE EUI-48 also known as MAC-48 media access control addresses. The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an abbreviation for Extended Unique Identifier.
 
 
-[Documentation](https://doc.rust-lang.org/eui48)
+[Documentation](https://docs.rs/eui48)
 
 ## Usage
 
@@ -16,7 +16,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-eui48 = "0.3"
+eui48 = "0.3.1"
 ```
 
 and this to your crate root:
@@ -56,3 +56,4 @@ fn main() {
 - 0.1 Andrew Baumhauer - Initial design
 - 0.2 rlcomstock3 - Added support for btree keys
 - 0.3 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Serde 1.0 support
+- 0.3.1 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Derive useful traits
