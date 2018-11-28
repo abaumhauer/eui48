@@ -42,6 +42,8 @@ fn main() {
 	println!("{}", mac.to_hex_string());
 	println!("{}", mac.to_dot_string());
 	println!("{}", mac.to_hexadecimal());
+	println!("{}", mac.to_interfaceid());
+	println!("{}", mac.to_link_local());
 
 	let mac = MacAddress::parse_str( "01-02-03-0A-0b-0f" ).expect("Parse error {}");
 	let mac = MacAddress::parse_str( "01:02:03:0A:0b:0f" ).expect("Parse error {}");
@@ -59,3 +61,4 @@ fn main() {
 - 0.3 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Serde 1.0 support
 - 0.3.1 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Derive useful traits
 - 0.4.0 Rainer Stademann - Define ABI as repr(C)
+- 0.4.1 Andrew Baumhauer - Add IPv6 Interface ID and Link Local conversions
