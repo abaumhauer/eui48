@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-eui48 = "0.3.2"
+eui48 = "0.4.0"
 ```
 
 and this to your crate root:
@@ -58,3 +58,4 @@ fn main() {
 - 0.2 rlcomstock3 - Added support for btree keys
 - 0.3 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Serde 1.0 support
 - 0.3.1 Michal 'vorner' Vaner <vorner+github@vorner.cz> - Derive useful traits
+- 0.4.0 Rainer Stademann - Define ABI as repr(C)
