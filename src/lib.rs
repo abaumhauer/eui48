@@ -38,6 +38,7 @@ pub const EUI64LEN: usize = 8;
 pub type Eui64 = [u8; EUI64LEN];
 
 /// A MAC address (EUI-48)
+#[repr(C)]
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct MacAddress {
     /// The 48-bit number stored in 6 bytes
