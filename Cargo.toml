@@ -1,9 +1,9 @@
 [package]
 name = "eui48"
-version = "0.3.2"
+version = "0.4.0"
 authors = ["Andrew Baumhauer <andy@baumhauer.us>",
-					 "<rlcomstock3@github.com>",
-					 "Michal 'vorner' Vaner <vorner+github@vorner.cz>" ]
+           "<rlcomstock3@github.com>",
+           "Michal 'vorner' Vaner <vorner+github@vorner.cz>" ]
 license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/abaumhauer/eui48"
@@ -18,4 +18,4 @@ abbreviation for Extended Unique Identifier.
 
 [dependencies]
 rustc-serialize = "0.3.24"
-serde = { version = "1.0.27", optional = true }
+serde = { version = "1.0.80", optional = true }
