@@ -110,14 +110,14 @@ impl MacAddress {
         self.eui.iter().all(|&b| b == 0xFF)
     }
 
-    /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
+    /// Returns true if bit 1 of Y is 0 in address 'xY:xx:xx:xx:xx:xx'
     pub fn is_unicast(&self) -> bool {
-        self.eui[0] & 0 == 0
+        self.eui[0] & 1 == 0
     }
 
     /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
     pub fn is_multicast(&self) -> bool {
-        self.eui[0] & 1 != 0
+        self.eui[0] & 1 == 1
     }
 
     /// Returns true if bit 2 of Y is 0 in address 'xY:xx:xx:xx:xx:xx'
@@ -127,7 +127,7 @@ impl MacAddress {
 
     /// Returns true if bit 2 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
     pub fn is_local(&self) -> bool {
-        self.eui[0] & 1 << 1 != 0
+        self.eui[0] & 1 << 1 == 2
     }
 
     /// Returns a String representation in the format '00-00-00-00-00-00'
@@ -411,6 +411,10 @@ mod tests {
     fn test_is_unicast() {
         let mac = MacAddress::parse_str("FE:00:5E:AB:CD:EF").unwrap();
         assert!(mac.is_unicast());
+        assert_eq!("fe:00:5e:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
+        let mac = MacAddress::parse_str("FF:00:5E:AB:CD:EF").unwrap();
+        assert!(!mac.is_unicast());
+        assert_eq!("ff:00:5e:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
         assert!(MacAddress::nil().is_unicast());
     }
 
@@ -418,19 +422,25 @@ mod tests {
     fn test_is_multicast() {
         let mac = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
         assert!(mac.is_multicast());
+        assert_eq!("01:00:5e:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
+        let mac = MacAddress::parse_str("F0:00:5E:AB:CD:EF").unwrap();
+        assert!(!mac.is_multicast());
+        assert_eq!("f0:00:5e:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
         assert!(MacAddress::broadcast().is_multicast());
     }
 
     #[test]
     fn test_is_universal() {
-        let mac = MacAddress::parse_str("15:24:56:AB:CD:EF").unwrap();
+        let mac = MacAddress::parse_str("11:24:56:AB:CD:EF").unwrap();
         assert!(mac.is_universal());
+        assert_eq!("11:24:56:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
     }
 
     #[test]
     fn test_is_local() {
-        let mac = MacAddress::parse_str("16:34:56:AB:CD:EF").unwrap();
+        let mac = MacAddress::parse_str("06:34:56:AB:CD:EF").unwrap();
         assert!(mac.is_local());
+        assert_eq!("06:34:56:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
     }
 
     #[test]
