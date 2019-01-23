@@ -409,15 +409,21 @@ mod tests {
 
     #[test]
     fn test_is_unicast() {
-        let mac = MacAddress::parse_str("FE:00:5E:AB:CD:EF").unwrap();
-        assert!(mac.is_unicast());
+        let mac_u = MacAddress::parse_str("FE:00:5E:AB:CD:EF").unwrap();
+        let mac_m = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
+        assert!(mac_u.is_unicast());
+        assert!(!mac_m.is_unicast());
         assert!(MacAddress::nil().is_unicast());
+        assert!(!MacAddress::broadcast().is_unicast());
     }
 
     #[test]
     fn test_is_multicast() {
-        let mac = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
-        assert!(mac.is_multicast());
+        let mac_u = MacAddress::parse_str("FE:00:5E:AB:CD:EF").unwrap();
+        let mac_m = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
+        assert!(!mac_u.is_multicast());
+        assert!(mac_m.is_multicast());
+        assert!(!MacAddress::nil().is_multicast());
         assert!(MacAddress::broadcast().is_multicast());
     }
 
