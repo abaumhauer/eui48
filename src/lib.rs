@@ -110,9 +110,9 @@ impl MacAddress {
         self.eui.iter().all(|&b| b == 0xFF)
     }
 
-    /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
+    /// Returns true if bit 1 of Y is 0 in address 'xY:xx:xx:xx:xx:xx'
     pub fn is_unicast(&self) -> bool {
-        self.eui[0] & 0 == 0
+        self.eui[0] & 1 == 0
     }
 
     /// Returns true if bit 1 of Y is 1 in address 'xY:xx:xx:xx:xx:xx'
