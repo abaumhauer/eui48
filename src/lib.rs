@@ -382,12 +382,24 @@ mod tests {
     }
 
     #[test]
+    fn test_from_bytes() {
+        assert_eq!("12:34:56:ab:cd:ef", MacAddress::from_bytes(&[0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF]).unwrap().to_hex_string());
+        assert!(MacAddress::from_bytes(&[0x12, 0x34, 0x56, 0xAB, 0xCD]).is_err());
+    }
+
+    #[test]
     fn test_nil() {
         let nil = MacAddress::nil();
         let not_nil = MacAddress::broadcast();
         assert_eq!("00:00:00:00:00:00", nil.to_hex_string());
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
+    }
+
+    #[test]
+    fn test_default() {
+        let default = MacAddress::default();
+        assert!(default.is_nil());
     }
 
     #[test]
@@ -666,6 +678,26 @@ mod tests {
         let s = json::encode(&m1).unwrap();
         let m2 = json::decode(&s).unwrap();
         assert_eq!(m1, m2);
+    }
+
+    #[test]
+    fn test_fmt_debug() {
+        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        assert_eq!("MacAddress(\"12:34:56:ab:cd:ef\")".to_owned(), format!("{:?}", mac));
+    }
+
+    #[test]
+    fn test_fmt() {
+        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        assert_eq!("12-34-56-ab-cd-ef".to_owned(), format!("{}", mac));
+    }
+
+    #[test]
+    fn test_fmt_parse_errors() {
+        assert_eq!(
+            "Err(InvalidLength(12))".to_owned(),
+            format!("{:?}", MacAddress::parse_str("123456ABCDEF"))
+        );
     }
 
     #[test]
