@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-eui48 = "0.4.3"
+eui48 = "0.4.4"
 ```
 
 and this to your crate root:
@@ -63,4 +63,5 @@ fn main() {
 - 0.4.0 Rainer Stademann - Define ABI as repr(C)
 - 0.4.1 Andrew Baumhauer - Add IPv6 Interface ID and Link Local conversions
 - 0.4.2 Andrew Baumhauer / Eric Clone - Bug fix in is_local() and is_unicast() functions
-- 0.4.2 Andrew Baumhauer - Update travis-ci, appveyor, codecov
+- 0.4.3 Andrew Baumhauer - Update travis-ci, appveyor, codecov
+- 0.4.4 Andrew Baumhauer - Update documentation
