@@ -11,6 +11,10 @@ matrix:
   allow_failures:
     - rust: nightly
 
+env:
+  global:
+  - RUSTFLAGS="-C link-dead-code --cfg feature='serde' --cfg feature='serde_json'"
+
 addons:
   apt:
     packages:

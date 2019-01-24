@@ -20,6 +20,8 @@
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
 extern crate serde;
+#[cfg(feature = "serde_json")]
+extern crate serde_json;
 
 use std::default::Default;
 use std::error::Error;
@@ -383,6 +385,7 @@ mod tests {
     fn test_nil() {
         let nil = MacAddress::nil();
         let not_nil = MacAddress::broadcast();
+        assert_eq!("00:00:00:00:00:00", nil.to_hex_string());
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
     }
@@ -391,6 +394,7 @@ mod tests {
     fn test_broadcast() {
         let broadcast = MacAddress::broadcast();
         let not_broadcast = MacAddress::nil();
+        assert_eq!("ff:ff:ff:ff:ff:ff", broadcast.to_hex_string());
         assert!(broadcast.is_broadcast());
         assert!(!not_broadcast.is_broadcast());
     }
@@ -398,13 +402,17 @@ mod tests {
     #[test]
     fn test_is_nil() {
         let nil = MacAddress::nil();
+        let not_nil = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
         assert!(nil.is_nil());
+        assert!(!not_nil.is_nil());
     }
 
     #[test]
     fn test_is_broadcast() {
         let broadcast = MacAddress::broadcast();
+        let not_broadcast = MacAddress::parse_str("01:00:5E:AB:CD:EF").unwrap();
         assert!(broadcast.is_broadcast());
+        assert!(!not_broadcast.is_broadcast());
     }
 
     #[test]
@@ -437,16 +445,20 @@ mod tests {
 
     #[test]
     fn test_is_universal() {
-        let mac = MacAddress::parse_str("11:24:56:AB:CD:EF").unwrap();
-        assert!(mac.is_universal());
-        assert_eq!("11:24:56:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
+        let universal = MacAddress::parse_str("11:24:56:AB:CD:EF").unwrap();
+        let not_universal = MacAddress::parse_str("12:24:56:AB:CD:EF").unwrap();
+        assert!(universal.is_universal());
+        assert!(!not_universal.is_universal());
+        assert_eq!("11:24:56:ab:cd:ef", universal.to_hex_string()); // Catch modifying first octet
     }
 
     #[test]
     fn test_is_local() {
-        let mac = MacAddress::parse_str("06:34:56:AB:CD:EF").unwrap();
-        assert!(mac.is_local());
-        assert_eq!("06:34:56:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
+        let local = MacAddress::parse_str("06:34:56:AB:CD:EF").unwrap();
+        let not_local = MacAddress::parse_str("00:34:56:AB:CD:EF").unwrap();
+        assert!(local.is_local());
+        assert!(!not_local.is_local());
+        assert_eq!("06:34:56:ab:cd:ef", local.to_hex_string()); // Catch modifying first octet
     }
 
     #[test]
@@ -654,5 +666,22 @@ mod tests {
         let s = json::encode(&m1).unwrap();
         let m2 = json::decode(&s).unwrap();
         assert_eq!(m1, m2);
+    }
+
+    #[test]
+    #[cfg(feature = "serde_json")]
+    fn test_serde_json_serialize() {
+        use serde_json;
+        let serialized = serde_json::to_string(&MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap()).unwrap();
+        assert_eq!("\"12-34-56-ab-cd-ef\"", serialized);
+    }
+
+    #[test]
+    #[cfg(feature = "serde_json")]
+    fn test_serde_json_deserialize() {
+        use serde_json;
+        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        let deserialized: MacAddress = serde_json::from_str("\"12-34-56-AB-CD-EF\"").unwrap();
+        assert_eq!(deserialized, mac);
     }
 }
