@@ -371,7 +371,7 @@ impl<'de> Deserialize<'de> for MacAddress {
 // ************** TESTS BEGIN HERE ***************
 #[cfg(test)]
 mod tests {
-    use super::{Eui48, MacAddress, MacAddressFormat};
+    use super::{Eui48, MacAddress, MacAddressFormat, ParseError};
 
     #[test]
     fn test_new() {
@@ -698,6 +698,10 @@ mod tests {
             "Err(InvalidLength(12))".to_owned(),
             format!("{:?}", MacAddress::parse_str("123456ABCDEF"))
         );
+        assert_eq!(
+            "Err(InvalidCharacter(\'#\', 2))".to_owned(),
+            format!("{:?}", MacAddress::parse_str("12#34#56#AB#CD#EF"))
+        );
     }
 
     #[test]
@@ -715,5 +719,18 @@ mod tests {
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
         let deserialized: MacAddress = serde_json::from_str("\"12-34-56-AB-CD-EF\"").unwrap();
         assert_eq!(deserialized, mac);
+    }
+
+    #[test]
+    fn test_macaddressformat_derive() {
+        assert_eq!(MacAddressFormat::HexString, MacAddressFormat::HexString);
+        assert_ne!(MacAddressFormat::HexString, MacAddressFormat::Canonical);
+    }
+
+    #[test]
+    fn test_parseerror_fmt() {
+        use std::error::Error;
+        assert_eq!("Invalid length; expecting 14 or 17 chars, found 2".to_owned(), format!("{}", ParseError::InvalidLength(2)));
+        assert_eq!("MacAddress parse error".to_owned(), format!("{}", ParseError::InvalidLength(2).description()));
     }
 }
