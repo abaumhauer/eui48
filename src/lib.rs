@@ -428,7 +428,7 @@ mod tests {
         assert!(!mac_u.is_multicast());
         assert!(mac_m.is_multicast());
         assert!(!MacAddress::nil().is_multicast());
-        assert_eq!("01:00:5e:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
+        assert_eq!("01:00:5e:ab:cd:ef", mac_m.to_hex_string()); // Catch modifying first octet
         let mac = MacAddress::parse_str("F0:00:5E:AB:CD:EF").unwrap();
         assert!(!mac.is_multicast());
         assert_eq!("f0:00:5e:ab:cd:ef", mac.to_hex_string()); // Catch modifying first octet
