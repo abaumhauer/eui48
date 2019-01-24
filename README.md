@@ -3,7 +3,7 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/abaumhauer/eui48?branch=master&svg=true)](https://ci.appveyor.com/project/abaumhauer/eui48/branch/master)
 [![Build Status](https://gitlab.com/abaumhauer/eui48/badges/master/build.svg)](https://gitlab.com/abaumhauer/eui48/commits/master)
 [![Build Status](https://travis-ci.org/abaumhauer/eui48.svg?branch=master)](https://travis-ci.org/abaumhauer/eui48)
-[![Coverage Status](https://codecov.io/gh/abaumhauer/eui48/branch/master/graph/badge.svg)](https://codecov.io/gh/JulianSchmid/eui48)
+[![Coverage Status](https://codecov.io/gh/abaumhauer/eui48/branch/master/graph/badge.svg)](https://codecov.io/gh/abaumhauer/eui48)
 
 eui48
 ====
