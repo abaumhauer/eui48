@@ -1,14 +1,14 @@
+[![Crates.io](https://img.shields.io/crates/v/eui48.svg)](https://crates.io/crates/eui48)
+[![docs.rs](https://docs.rs/eui48/badge.svg)](https://docs.rs/eui48)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/abaumhauer/eui48?branch=master&svg=true)](https://ci.appveyor.com/project/abaumhauer/eui48/branch/master)
+[![Build Status](https://gitlab.com/abaumhauer/eui48/badges/master/build.svg)](https://gitlab.com/abaumhauer/eui48/commits/master)
+[![Build Status](https://travis-ci.org/abaumhauer/eui48.svg?branch=master)](https://travis-ci.org/abaumhauer/eui48)
+[![Coverage Status](https://codecov.io/gh/abaumhauer/eui48/branch/master/graph/badge.svg)](https://codecov.io/gh/JulianSchmid/eui48)
+
 eui48
 ====
 
-[![Build Status](https://travis-ci.org/abaumhauer/eui48.svg?branch=master)](https://travis-ci.org/abaumhauer/eui48)
-[![Documentation](https://docs.rs/abaumhauer/badge.svg)](https://docs.rs/eui48/0.4.2/eui48)
-[![Crate](https://img.shields.io/crates/v/eui48.svg)](https://crates.io/crates/eui48)
-
 A Rust library to represent and parse IEEE EUI-48 also known as MAC-48 media access control addresses. The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an abbreviation for Extended Unique Identifier.
-
-
-[Documentation](https://docs.rs/eui48)
 
 ## Usage
 

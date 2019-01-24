@@ -326,7 +326,7 @@ impl Encodable for MacAddress {
 impl Decodable for MacAddress {
     /// Decode a MacAddress from a string in canonical form
     fn decode<D: Decoder>(d: &mut D) -> Result<MacAddress, D::Error> {
-        let string = try!(d.read_str());
+        let string = d.read_str()?;
         string.parse().map_err(|err| d.error(&format!("{}", err)))
     }
 }

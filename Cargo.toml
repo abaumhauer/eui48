@@ -1,21 +1,34 @@
 [package]
 name = "eui48"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Andrew Baumhauer <andy@baumhauer.us>",
            "<rlcomstock3@github.com>",
            "Michal 'vorner' Vaner <vorner+github@vorner.cz>" ]
 license = "MIT/Apache-2.0"
+edition = "2018"
 readme = "README.md"
 repository = "https://github.com/abaumhauer/eui48"
 homepage = "https://github.com/abaumhauer/eui48"
-documentation = "https://docs.rs/eui48/0.4.2/eui48/"
 keywords = ["EUI-48", "MAC", "MAC-48", "networking", "MACADDR"]
+categories = ["network-programming", "parser-implementations"]
 description = """
 A library to generate and parse IEEE EUI-48 and EUI-64, also known as MAC-48 media access
 control addresses. The IEEE claims trademarks on the names EUI-48 and EUI-64, in which EUI is an
 abbreviation for Extended Unique Identifier.
 """
+exclude = [
+  ".gitignore",
+    ".travis.yml",
+    ".gitlab-ci.yml",
+    ".travis/*"
+]
 
 [dependencies]
 rustc-serialize = "0.3.24"
 serde = { version = "1.0.80", optional = true }
+
+[badges]
+travis-ci = { repository = "abaumhauer/eui48", branch = "master" }
+codecov = { repository = "abaumhauer/eui48", branch = "master", service = "github" }
+gitlab = { repository = "abaumhauer/eui48", branch = "master" }
+appveyor = { repository = "abaumhauer/eui48", branch = "master", service = "github" }
