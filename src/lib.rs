@@ -731,6 +731,7 @@ mod tests {
     fn test_parseerror_fmt() {
         use std::error::Error;
         assert_eq!("Invalid length; expecting 14 or 17 chars, found 2".to_owned(), format!("{}", ParseError::InvalidLength(2)));
+        assert_eq!("Invalid character; found `@` at offset 2".to_owned(), format!("{}", ParseError::InvalidCharacter('@', 2)));
         assert_eq!("MacAddress parse error".to_owned(), format!("{}", ParseError::InvalidLength(2).description()));
     }
 }
