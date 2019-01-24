@@ -1,4 +1,6 @@
 language: rust
+script:
+  - cargo test --verbose --features serde,serde_json
 
 sudo: required
 
@@ -13,7 +15,7 @@ matrix:
 
 env:
   global:
-  - RUSTFLAGS="-C link-dead-code --cfg feature=\"serde\" --cfg feature=\"serde_json\""
+  - RUSTFLAGS="-C link-dead-code"
 
 addons:
   apt:
