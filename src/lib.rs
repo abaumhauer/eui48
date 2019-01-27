@@ -260,6 +260,11 @@ impl MacAddress {
     pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
         &self.eui
     }
+
+    /// Returns an array in Eui48. Works as an inverse function of new()
+    pub fn to_array(&self) -> Eui48 {
+        self.eui
+    }
 }
 
 impl FromStr for MacAddress {
@@ -733,5 +738,13 @@ mod tests {
         assert_eq!("Invalid length; expecting 14 or 17 chars, found 2".to_owned(), format!("{}", ParseError::InvalidLength(2)));
         assert_eq!("Invalid character; found `@` at offset 2".to_owned(), format!("{}", ParseError::InvalidCharacter('@', 2)));
         assert_eq!("MacAddress parse error".to_owned(), format!("{}", ParseError::InvalidLength(2).description()));
+    }
+
+    #[test]
+    fn test_to_array() {
+        let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
+        let mac = MacAddress::new(eui);
+        assert_eq!(eui, MacAddress::new(eui).to_array());
+        assert_eq!(mac, MacAddress::new(mac.to_array()));
     }
 }
