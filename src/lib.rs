@@ -265,6 +265,15 @@ impl MacAddress {
     pub fn to_array(&self) -> Eui48 {
         self.eui
     }
+
+    /// Returns Display MacAddressFormat, determined at compile time.
+    pub fn get_display_format() -> MacAddressFormat {
+        if cfg!(feature = "disp_hexstring") {
+            MacAddressFormat::HexString
+        } else {
+            MacAddressFormat::Canonical
+        }
+    }
 }
 
 impl FromStr for MacAddress {
@@ -296,7 +305,8 @@ impl fmt::Debug for MacAddress {
 impl fmt::Display for MacAddress {
     /// Display format is canonical format (00-00-00-00-00-00)
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string(MacAddressFormat::Canonical))
+        let disp_fmt = MacAddress::get_display_format();
+        write!(f, "{}", self.to_string(disp_fmt))
     }
 }
 
@@ -482,8 +492,6 @@ mod tests {
     fn test_to_canonical() {
         let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
-        let s = format!("{}", mac);
-        assert_eq!(s, mac.to_canonical());
         assert_eq!("12-34-56-ab-cd-ef", mac.to_canonical());
     }
 
@@ -694,7 +702,12 @@ mod tests {
     #[test]
     fn test_fmt() {
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
-        assert_eq!("12-34-56-ab-cd-ef".to_owned(), format!("{}", mac));
+        match MacAddress::get_display_format() {
+            MacAddressFormat::HexString =>
+                assert_eq!("12:34:56:ab:cd:ef".to_owned(), format!("{}", mac)),
+                _ =>
+                assert_eq!("12-34-56-ab-cd-ef".to_owned(), format!("{}", mac)),
+        };
     }
 
     #[test]

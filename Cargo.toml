@@ -33,3 +33,8 @@ travis-ci = { repository = "abaumhauer/eui48", branch = "master" }
 codecov = { repository = "abaumhauer/eui48", branch = "master", service = "github" }
 gitlab = { repository = "abaumhauer/eui48", branch = "master" }
 appveyor = { repository = "abaumhauer/eui48", branch = "master", service = "github" }
+
+[features]
+default = []
+disp_hexstring = []
+
