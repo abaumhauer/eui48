@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-eui48 = "0.4.5"
+eui48 = "0.4.6"
 ```
 
 and this to your crate root:
@@ -66,3 +66,4 @@ fn main() {
 - 0.4.3 Andrew Baumhauer - Update travis-ci, appveyor, codecov
 - 0.4.4 Andrew Baumhauer - Update documentation
 - 0.4.5 Andrew Baumhauer - Improve code coverage and tests
+- 0.4.6 Jiwoong Lee - Add to_array() for compatibility, add feature disp_hexstring

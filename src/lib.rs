@@ -398,7 +398,12 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        assert_eq!("12:34:56:ab:cd:ef", MacAddress::from_bytes(&[0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF]).unwrap().to_hex_string());
+        assert_eq!(
+            "12:34:56:ab:cd:ef",
+            MacAddress::from_bytes(&[0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF])
+                .unwrap()
+                .to_hex_string()
+        );
         assert!(MacAddress::from_bytes(&[0x12, 0x34, 0x56, 0xAB, 0xCD]).is_err());
     }
 
@@ -696,17 +701,20 @@ mod tests {
     #[test]
     fn test_fmt_debug() {
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
-        assert_eq!("MacAddress(\"12:34:56:ab:cd:ef\")".to_owned(), format!("{:?}", mac));
+        assert_eq!(
+            "MacAddress(\"12:34:56:ab:cd:ef\")".to_owned(),
+            format!("{:?}", mac)
+        );
     }
 
     #[test]
     fn test_fmt() {
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
         match MacAddress::get_display_format() {
-            MacAddressFormat::HexString =>
-                assert_eq!("12:34:56:ab:cd:ef".to_owned(), format!("{}", mac)),
-                _ =>
-                assert_eq!("12-34-56-ab-cd-ef".to_owned(), format!("{}", mac)),
+            MacAddressFormat::HexString => {
+                assert_eq!("12:34:56:ab:cd:ef".to_owned(), format!("{}", mac))
+            }
+            _ => assert_eq!("12-34-56-ab-cd-ef".to_owned(), format!("{}", mac)),
         };
     }
 
@@ -726,7 +734,8 @@ mod tests {
     #[cfg(feature = "serde_json")]
     fn test_serde_json_serialize() {
         use serde_json;
-        let serialized = serde_json::to_string(&MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap()).unwrap();
+        let serialized =
+            serde_json::to_string(&MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap()).unwrap();
         assert_eq!("\"12-34-56-ab-cd-ef\"", serialized);
     }
 
@@ -748,9 +757,18 @@ mod tests {
     #[test]
     fn test_parseerror_fmt() {
         use std::error::Error;
-        assert_eq!("Invalid length; expecting 14 or 17 chars, found 2".to_owned(), format!("{}", ParseError::InvalidLength(2)));
-        assert_eq!("Invalid character; found `@` at offset 2".to_owned(), format!("{}", ParseError::InvalidCharacter('@', 2)));
-        assert_eq!("MacAddress parse error".to_owned(), format!("{}", ParseError::InvalidLength(2).description()));
+        assert_eq!(
+            "Invalid length; expecting 14 or 17 chars, found 2".to_owned(),
+            format!("{}", ParseError::InvalidLength(2))
+        );
+        assert_eq!(
+            "Invalid character; found `@` at offset 2".to_owned(),
+            format!("{}", ParseError::InvalidCharacter('@', 2))
+        );
+        assert_eq!(
+            "MacAddress parse error".to_owned(),
+            format!("{}", ParseError::InvalidLength(2).description())
+        );
     }
 
     #[test]

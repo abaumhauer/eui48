@@ -1,6 +1,6 @@
 language: rust
 script:
-  - cargo test --verbose --features serde,serde_json
+  - cargo test --verbose --features default,disp_hexstring,serde,serde_json
 
 sudo: required
 
