@@ -24,7 +24,7 @@ exclude = [
 ]
 
 [dependencies]
-rustc-serialize = "0.3.24"
+rustc-serialize = { version = "0.3.24", optional = true }
 serde = { version = "1.0.80", optional = true }
 serde_json = { version = "1.0.37", optional = true }
 
@@ -35,6 +35,6 @@ gitlab = { repository = "abaumhauer/eui48", branch = "master" }
 appveyor = { repository = "abaumhauer/eui48", branch = "master", service = "github" }
 
 [features]
-default = []
+default = ["rustc-serialize"]
 disp_hexstring = []
 
