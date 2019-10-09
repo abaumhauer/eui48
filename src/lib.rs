@@ -218,7 +218,7 @@ impl MacAddress {
             }
 
             match c {
-                '0'...'9' | 'a'...'f' | 'A'...'F' => {
+                '0'..='9' | 'a'..='f' | 'A'..='F' => {
                     match hn {
                         false => {
                             // We will match '0' and run this even if the format is 0x
