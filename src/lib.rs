@@ -72,7 +72,7 @@ pub enum ParseError {
 
 impl MacAddress {
     /// Create a new MacAddress from `[u8; 6]`.
-    pub fn new(eui: Eui48) -> MacAddress {
+    pub const fn new(eui: Eui48) -> MacAddress {
         MacAddress { eui: eui }
     }
 
