@@ -71,4 +71,4 @@ The default display format is cannonical form `01-02-03-04-05-06` unless a compi
 - 0.4.7 Adam Reichold - WASM updates
 - 0.4.8 @kamek-pf - respect disp_hexstring flag
 - 0.4.9 Sebastian Dietze - New const added
-- 0.5.0 Andrew Baumhauer - cleanup, update versions, fmt, and merge PRs
+- 0.5.0 Andrew Baumhauer - cleanup, update versions, fmt, merge PRs, update unit tests
