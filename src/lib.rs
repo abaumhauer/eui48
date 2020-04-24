@@ -753,7 +753,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Invalid length; expecting 14 or 17 chars, found 2")]
+    #[should_panic(expected = "Invalid length; expecting 11 to 17 chars, found 2")]
     #[cfg(feature = "serde_json")]
     fn test_serde_json_deserialize_panic() {
         let _should_panic: MacAddress = serde_json::from_str("\"12\"").unwrap();
