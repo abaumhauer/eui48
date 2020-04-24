@@ -299,7 +299,7 @@ impl fmt::Debug for MacAddress {
 }
 
 impl fmt::Display for MacAddress {
-    /// Display format is canonical format (00-00-00-00-00-00)
+    /// Display format is canonical format (00-00-00-00-00-00) by default
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let disp_fmt = MacAddress::get_display_format();
         write!(f, "{}", self.to_string(disp_fmt))
@@ -331,9 +331,10 @@ impl Error for ParseError {
 
 #[cfg(feature = "rustc-serialize")]
 impl Encodable for MacAddress {
-    /// Encode a MacAddress as canonical form
+    /// Encode a MacAddress using the default format
     fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
-        e.emit_str(&self.to_canonical())
+        let disp_fmt = MacAddress::get_display_format();
+        e.emit_str(&self.to_string(disp_fmt))
     }
 }
 
@@ -348,9 +349,10 @@ impl Decodable for MacAddress {
 
 #[cfg(feature = "serde")]
 impl Serialize for MacAddress {
-    /// Serialize a MacAddress as canonical form using the serde crate
+    /// Serialize a MacAddress in the default format using the serde crate
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&self.to_canonical())
+        let disp_fmt = MacAddress::get_display_format();
+        serializer.serialize_str(&self.to_string(disp_fmt))
     }
 }
 
