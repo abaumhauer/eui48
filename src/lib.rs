@@ -676,16 +676,27 @@ mod tests {
         use rustc_serialize::json;
 
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
-        assert_eq!("\"12-34-56-ab-cd-ef\"", json::encode(&mac).unwrap());
+        // Format returned is base on compile time of feature(disp_hexstring)
+        if cfg!(feature = "disp_hexstring") {
+            assert_eq!("\"12:34:56:ab:cd:ef\"", json::encode(&mac).unwrap());
+        } else {
+            assert_eq!("\"12-34-56-ab-cd-ef\"", json::encode(&mac).unwrap());
+        }
     }
 
     #[test]
     fn test_deserialize() {
         use rustc_serialize::json;
 
-        let d = "\"12-34-56-AB-CD-EF\"";
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
-        assert_eq!(mac, json::decode(&d).unwrap());
+
+        if cfg!(feature = "disp_hexstring") {
+            let d = "\"12:34:56:AB:CD:EF\"";
+            assert_eq!(mac, json::decode(&d).unwrap());
+        } else {
+            let d = "\"12-34-56-AB-CD-EF\"";
+            assert_eq!(mac, json::decode(&d).unwrap());
+        }
     }
 
     #[test]
@@ -709,7 +720,7 @@ mod tests {
 
     #[test]
     fn test_fmt() {
-        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        let mac = MacAddress::parse_str("0x123456ABCDEF").unwrap();
         match MacAddress::get_display_format() {
             MacAddressFormat::HexString => {
                 assert_eq!("12:34:56:ab:cd:ef".to_owned(), format!("{}", mac))
@@ -736,7 +747,11 @@ mod tests {
         use serde_json;
         let serialized =
             serde_json::to_string(&MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap()).unwrap();
-        assert_eq!("\"12-34-56-ab-cd-ef\"", serialized);
+        if cfg!(feature = "disp_hexstring") {
+            assert_eq!("\"12:34:56:ab:cd:ef\"", serialized);
+        } else {
+            assert_eq!("\"12-34-56-ab-cd-ef\"", serialized);
+        }
     }
 
     #[test]
@@ -746,6 +761,13 @@ mod tests {
         let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
         let deserialized: MacAddress = serde_json::from_str("\"12-34-56-AB-CD-EF\"").unwrap();
         assert_eq!(deserialized, mac);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid length; expecting 14 or 17 chars, found 2")]  
+    #[cfg(feature = "serde_json")]
+    fn test_serde_json_deserialize_panic() {
+        let _should_panic: MacAddress = serde_json::from_str("\"12\"").unwrap();
     }
 
     #[test]

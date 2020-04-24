@@ -51,6 +51,7 @@ fn main() {
 	let mac = MacAddress::parse_str( "0x1234567890ab" ).expect("Parse error {}");
 }
 ```
+The default display format is cannonical form `01-02-03-04-05-06` unless a compile time feature `disp_hexstring` is enabled, then the default format is of the form `01:02:03:04:05:06`.
 
 ## References
 [Wikipedia: MAC address](https://en.wikipedia.org/wiki/MAC_address)
