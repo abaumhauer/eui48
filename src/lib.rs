@@ -15,7 +15,6 @@
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
     html_root_url = "https://doc.rust-lang.org/eui48/"
 )]
-#![cfg_attr(test, deny(warnings))]
 
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
@@ -73,7 +72,7 @@ pub enum ParseError {
 impl MacAddress {
     /// Create a new MacAddress from `[u8; 6]`.
     pub fn new(eui: Eui48) -> MacAddress {
-        MacAddress { eui: eui }
+        MacAddress { eui }
     }
 
     /// Create a new MacAddress from a byte slice.
@@ -84,9 +83,7 @@ impl MacAddress {
             return Err(());
         }
         let mut input: [u8; EUI48LEN] = Default::default();
-        for i in 0..EUI48LEN {
-            input[i] = bytes[i];
-        }
+        input[..EUI48LEN].clone_from_slice(&bytes[..EUI48LEN]);
         Ok(Self::new(input))
     }
 
@@ -218,18 +215,15 @@ impl MacAddress {
             }
 
             match c {
-                '0'...'9' | 'a'...'f' | 'A'...'F' => {
-                    match hn {
-                        false => {
-                            // We will match '0' and run this even if the format is 0x
-                            hn = true; // Parsed the high nibble
-                            eui[offset] = (c.to_digit(16).unwrap() as u8) << 4;
-                        }
-                        true => {
-                            hn = false; // Parsed the low nibble
-                            eui[offset] += c.to_digit(16).unwrap() as u8;
-                            offset += 1;
-                        }
+                '0'..='9' | 'a'..='f' | 'A'..='F' => {
+                    if hn {
+                        hn = false; // Parsed the low nibble
+                        eui[offset] += c.to_digit(16).unwrap() as u8;
+                        offset += 1;
+                    } else {
+                        // We will match '0' and run this even if the format is 0x
+                        hn = true; // Parsed the high nibble
+                        eui[offset] = (c.to_digit(16).unwrap() as u8) << 4;
                     }
                 }
                 '-' | ':' | '.' => {}
@@ -257,7 +251,7 @@ impl MacAddress {
     }
 
     /// Return the internal structure as a slice of bytes
-    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
+    pub fn as_bytes(&self) -> &[u8] {
         &self.eui
     }
 
@@ -756,7 +750,6 @@ mod tests {
 
     #[test]
     fn test_parseerror_fmt() {
-        use std::error::Error;
         assert_eq!(
             "Invalid length; expecting 14 or 17 chars, found 2".to_owned(),
             format!("{}", ParseError::InvalidLength(2))
@@ -766,8 +759,8 @@ mod tests {
             format!("{}", ParseError::InvalidCharacter('@', 2))
         );
         assert_eq!(
-            "MacAddress parse error".to_owned(),
-            format!("{}", ParseError::InvalidLength(2).description())
+            "Invalid length; expecting 14 or 17 chars, found 2".to_owned(),
+            format!("{}", ParseError::InvalidLength(2).to_string())
         );
     }
 

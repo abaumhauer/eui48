@@ -25,8 +25,8 @@ exclude = [
 
 [dependencies]
 rustc-serialize = "0.3.24"
-serde = { version = "1.0.80", optional = true }
-serde_json = { version = "1.0.37", optional = true }
+serde = { version = "1.0.106", optional = true }
+serde_json = { version = "1.0.51", optional = true }
 
 [badges]
 travis-ci = { repository = "abaumhauer/eui48", branch = "master" }
