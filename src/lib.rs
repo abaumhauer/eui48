@@ -17,6 +17,7 @@
 )]
 #![cfg_attr(test, deny(warnings))]
 
+#[cfg(feature = "rustc-serialize")]
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
 extern crate serde;
@@ -28,6 +29,7 @@ use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 
+#[cfg(feature = "rustc-serialize")]
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 #[cfg(feature = "serde")]
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
@@ -333,6 +335,7 @@ impl Error for ParseError {
     }
 }
 
+#[cfg(feature = "rustc-serialize")]
 impl Encodable for MacAddress {
     /// Encode a MacAddress as canonical form
     fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
@@ -340,6 +343,7 @@ impl Encodable for MacAddress {
     }
 }
 
+#[cfg(feature = "rustc-serialize")]
 impl Decodable for MacAddress {
     /// Decode a MacAddress from a string in canonical form
     fn decode<D: Decoder>(d: &mut D) -> Result<MacAddress, D::Error> {
