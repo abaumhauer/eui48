@@ -82,9 +82,9 @@ impl MacAddress {
     /// Create a new MacAddress from a byte slice.
     ///
     /// Returns an error (without any description) if the slice doesn't have the proper length.
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, ()> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, ParseError> {
         if bytes.len() != EUI48LEN {
-            return Err(());
+            return Err(ParseError::InvalidLength(bytes.len()));
         }
         let mut input: [u8; EUI48LEN] = Default::default();
         input[..EUI48LEN].clone_from_slice(&bytes[..EUI48LEN]);
