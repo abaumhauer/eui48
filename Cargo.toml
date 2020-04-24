@@ -1,6 +1,6 @@
 [package]
 name = "eui48"
-version = "0.4.6"
+version = "0.5.0"
 authors = ["Andrew Baumhauer <andy@baumhauer.us>",
            "<rlcomstock3@github.com>",
            "Michal 'vorner' Vaner <vorner+github@vorner.cz>" ]
