@@ -51,7 +51,14 @@ fn main() {
 	let mac = MacAddress::parse_str( "0x1234567890ab" ).expect("Parse error {}");
 }
 ```
-The default display format is cannonical form `01-02-03-04-05-06` unless a compile time feature `disp_hexstring` is enabled, then the default format is of the form `01:02:03:04:05:06`.
+
+## Notes
+* The default display format is cannonical form `01-02-03-04-05-06` unless a compile time feature `disp_hexstring` is enabled, then the default format is of the form `01:02:03:04:05:06`.
+
+Version 1.0.0 and above allows a more flexible parsing of MAC address strings, compliments of Stan Drozd:
+* Enables the library's caller to parse the MACs that don't follow fixed-length MAC address convention (I'm looking at you, ebtables!). In general, the parsing function tries harder to interpret a given string than before.
+* Rewrite parse_str to use a regex and be more lenient (now it permits one-off string chopping errors and mixed delimiters are accepted as long as we manage to read 6 bytes)
+* Exchange the InvalidCharacter error enum value for InvalidByteCount - InvalidCharacter is no longer supported. See versions >=0.5.0 and < 1.0.0 if you need legacy behavior.
 
 ## References
 [Wikipedia: MAC address](https://en.wikipedia.org/wiki/MAC_address)
@@ -72,3 +79,4 @@ The default display format is cannonical form `01-02-03-04-05-06` unless a compi
 - 0.4.8 @kamek-pf - respect disp_hexstring flag
 - 0.4.9 Sebastian Dietze - New const added
 - 0.5.0 Andrew Baumhauer - cleanup, update versions, fmt, merge PRs, update unit tests
+- 1.0.0 Stan Drozd, @rlcomstock3, and Andrew Baumhauer - merged all forks and improvements back to this repo
