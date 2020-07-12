@@ -1,6 +1,6 @@
 [package]
 name = "eui48"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Andrew Baumhauer <andy@baumhauer.us>",
            "<rlcomstock3@github.com>",
            "Michal 'vorner' Vaner <vorner+github@vorner.cz>" ]
@@ -25,8 +25,8 @@ exclude = [
 
 [dependencies]
 rustc-serialize = { version = "0.3.24", optional = true }
-serde = { version = "1.0.106", optional = true }
-serde_json = { version = "1.0.51", optional = true }
+serde = { version = "1.0.114", optional = true }
+serde_json = { version = "1.0.56", optional = true }
 
 [badges]
 travis-ci = { repository = "abaumhauer/eui48", branch = "master" }

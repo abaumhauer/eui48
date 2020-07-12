@@ -176,10 +176,10 @@ impl MacAddress {
         )
     }
 
-    /// Returns a String representation in the IPv6 link local format 'ff80::0000:00ff:fe00:0000'
+    /// Returns a String representation in the IPv6 link local format 'fe80::0000:00ff:fe00:0000'
     pub fn to_link_local(&self) -> String {
         format!(
-            "ff80::{:02x}{:02x}:{:02x}ff:fe{:02x}:{:02x}{:02x}",
+            "fe80::{:02x}{:02x}:{:02x}ff:fe{:02x}:{:02x}{:02x}",
             (self.eui[0] ^ 0x02),
             self.eui[1],
             self.eui[2],
@@ -532,7 +532,7 @@ mod tests {
     fn test_to_link_local() {
         let eui: Eui48 = [0x12, 0x34, 0x56, 0xAB, 0xCD, 0xEF];
         let mac = MacAddress::new(eui);
-        assert_eq!("ff80::1034:56ff:feab:cdef", mac.to_link_local());
+        assert_eq!("fe80::1034:56ff:feab:cdef", mac.to_link_local());
     }
 
     #[test]
