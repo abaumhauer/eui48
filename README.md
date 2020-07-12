@@ -79,4 +79,6 @@ Version 1.0.0 and above allows a more flexible parsing of MAC address strings, c
 - 0.4.8 @kamek-pf - respect disp_hexstring flag
 - 0.4.9 Sebastian Dietze - New const added
 - 0.5.0 Andrew Baumhauer - cleanup, update versions, fmt, merge PRs, update unit tests
+- 0.5.1 jrb0001 - Fixed incorrect IPv6 to_link_local for Link-Scoped Unicast
 - 1.0.0 Stan Drozd, @rlcomstock3, and Andrew Baumhauer - merged all forks and improvements back to this repo
+- 1.0.1 jrb0001 - Fixed incorrect IPv6 to_link_local for Link-Scoped Unicast
