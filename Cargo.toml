@@ -10,7 +10,6 @@ edition = "2018"
 readme = "README.md"
 repository = "https://github.com/abaumhauer/eui48"
 homepage = "https://github.com/abaumhauer/eui48"
-documentation = "https://doc.rust-lang.org/eui48"
 keywords = ["EUI-48", "MAC", "MAC-48", "networking", "MACADDR"]
 categories = ["network-programming", "parser-implementations"]
 description = """
