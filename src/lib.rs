@@ -328,7 +328,7 @@ impl Decodable for MacAddress {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", not(feature = "serde_bytes")))]
 impl Serialize for MacAddress {
     /// Serialize a MacAddress in the default format using the serde crate
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -337,7 +337,15 @@ impl Serialize for MacAddress {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serde_bytes")]
+impl Serialize for MacAddress {
+    /// Serialize a MacAddress as raw bytes using the serde crate
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_bytes(self.as_bytes())
+    }
+}
+
+#[cfg(all(feature = "serde", not(feature = "serde_bytes")))]
 impl<'de> Deserialize<'de> for MacAddress {
     /// Deserialize a MacAddress from canonical form using the serde crate
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
@@ -345,22 +353,35 @@ impl<'de> Deserialize<'de> for MacAddress {
         impl<'de> de::Visitor<'de> for MacAddressVisitor {
             type Value = MacAddress;
 
-            fn visit_str<E: de::Error>(self, value: &str) -> Result<MacAddress, E> {
-                value.parse().map_err(|err| E::custom(&format!("{}", err)))
-            }
-
-            fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<MacAddress, E> {
-                MacAddress::from_bytes(value).map_err(|_| E::invalid_length(value.len(), &self))
-            }
-
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(
-                    formatter,
-                    "either a string representation of a MAC address or 6-element byte array"
-                )
+                write!(formatter, "a string representation of a MAC address")
+            }
+
+            fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
+                value.parse().map_err(|err| E::custom(&format!("{}", err)))
             }
         }
         deserializer.deserialize_str(MacAddressVisitor)
+    }
+}
+
+#[cfg(feature = "serde_bytes")]
+impl<'de> Deserialize<'de> for MacAddress {
+    /// Deserialize a MacAddress from raw bytes using the serde crate
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct MacAddressVisitor;
+        impl<'de> de::Visitor<'de> for MacAddressVisitor {
+            type Value = MacAddress;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                write!(formatter, "6-element byte array")
+            }
+
+            fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Self::Value, E> {
+                MacAddress::from_bytes(value).map_err(|_| E::invalid_length(value.len(), &self))
+            }
+        }
+        deserializer.deserialize_bytes(MacAddressVisitor)
     }
 }
 
@@ -757,6 +778,17 @@ mod tests {
     #[cfg(feature = "serde_json")]
     fn test_serde_json_deserialize_panic() {
         let _should_panic: MacAddress = serde_json::from_str("\"12\"").unwrap();
+    }
+
+    #[test]
+    #[cfg(feature = "serde_bytes")]
+    fn test_serde_bytes_serialization_roundtrip() {
+        use bincode;
+        let mac = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
+        let mut buffer = Vec::new();
+        bincode::serialize_into(&mut buffer, &mac).unwrap();
+        let deserialized: MacAddress = bincode::deserialize_from(&*buffer).unwrap();
+        assert_eq!(deserialized, mac);
     }
 
     #[test]
