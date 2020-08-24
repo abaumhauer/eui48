@@ -60,6 +60,11 @@ Version 1.0.0 and above allows a more flexible parsing of MAC address strings, c
 * Rewrite parse_str to use a regex and be more lenient (now it permits one-off string chopping errors and mixed delimiters are accepted as long as we manage to read 6 bytes)
 * Exchange the InvalidCharacter error enum value for InvalidByteCount - InvalidCharacter is no longer supported. See versions >=0.5.0 and < 1.0.0 if you need legacy behavior.
 
+## Serialization
+When using `serde` to serialize a MAC address the address is stored as a formatted string. This fits well for text-based protocols like JSON but creates overhead for binary serialization. The overhead gets even bigger when the string is deserialized again, as a full-grown parser is needed instead of reading raw bytes. To reduce this overhead use the `serde_bytes` feature when serializing and deserializing MAC addresses to binary protocols. 
+
+NOTE: `serde_bytes` and `serde_json` are mutually exclusive!
+
 ## References
 [Wikipedia: MAC address](https://en.wikipedia.org/wiki/MAC_address)
 
@@ -82,3 +87,4 @@ Version 1.0.0 and above allows a more flexible parsing of MAC address strings, c
 - 0.5.1 jrb0001 - Fixed incorrect IPv6 to_link_local for Link-Scoped Unicast
 - 1.0.0 Stan Drozd, @rlcomstock3, and Andrew Baumhauer - merged all forks and improvements back to this repo
 - 1.0.1 jrb0001 - Fixed incorrect IPv6 to_link_local for Link-Scoped Unicast
+- 1.1.0 Felix Schreiner - binary serialization optimization
