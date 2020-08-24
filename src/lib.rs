@@ -644,20 +644,20 @@ mod tests {
     fn test_compare() {
         let m1 = MacAddress::nil();
         let m2 = MacAddress::broadcast();
-        assert!(m1 == m1);
-        assert!(m2 == m2);
-        assert!(m1 != m2);
-        assert!(m2 != m1);
+        assert_eq!(m1, m1);
+        assert_eq!(m2, m2);
+        assert_ne!(m1, m2);
+        assert_ne!(m2, m1);
     }
 
     #[test]
     fn test_clone() {
         let m1 = MacAddress::parse_str("12:34:56:AB:CD:EF").unwrap();
-        let m2 = m1.clone();
-        assert!(m1 == m1);
-        assert!(m2 == m2);
-        assert!(m1 == m2);
-        assert!(m2 == m1);
+        let m2 = m1;
+        assert_eq!(m1, m1);
+        assert_eq!(m2, m2);
+        assert_eq!(m1, m2);
+        assert_eq!(m2, m1);
     }
 
     #[test]
@@ -773,7 +773,7 @@ mod tests {
         );
         assert_eq!(
             "Invalid length; expecting 11 to 17 chars, found 2".to_owned(),
-            format!("{}", ParseError::InvalidLength(2).to_string())
+            ParseError::InvalidLength(2).to_string()
         );
     }
 
