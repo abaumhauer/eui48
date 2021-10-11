@@ -16,7 +16,6 @@
     html_root_url = "https://doc.rust-lang.org/eui48/"
 )]
 
-extern crate regex;
 #[cfg(feature = "rustc-serialize")]
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
@@ -29,7 +28,6 @@ use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 
-use regex::Regex;
 #[cfg(feature = "rustc-serialize")]
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 #[cfg(feature = "serde")]
@@ -71,6 +69,8 @@ pub enum ParseError {
     InvalidLength(usize),
     /// The input string is invalid, usize bytes were found, and we put up to 6 bytes into Eui48
     InvalidByteCount(usize, Eui48),
+    /// Character not [0-9a-fA-F]|'x'|'-'|':'|'.'
+    InvalidCharacter(char),
 }
 
 impl MacAddress {
@@ -203,7 +203,6 @@ impl MacAddress {
 
     /// Parses a String representation from any format supported
     pub fn parse_str(s: &str) -> Result<MacAddress, ParseError> {
-        let re = Regex::new("(0x)?([0-9a-fA-F]{1,2})[:.-]?").unwrap();
         let mut eui: Eui48 = [0; EUI48LEN];
 
         match s.len() {
@@ -213,18 +212,48 @@ impl MacAddress {
             }
         }
 
-        let mut i = 0;
-        for caps in re.captures_iter(s) {
-            // Fill the array and keep counting for InvalidByteCount
-            if i < EUI48LEN {
-                let matched_byte = caps.get(2).unwrap().as_str();
-                eui[i] = u8::from_str_radix(matched_byte, 16).unwrap();
+        let mut offset = 0;
+
+        for s in s
+            .split(&[':', '.', '-'][..])
+            .map(|s| if s.starts_with("0x") { &s[2..] } else { s })
+        {
+            let mut hex = 0;
+            let mut i = 0;
+
+            for c in s.chars() {
+                match c {
+                    '0'..='9' | 'a'..='f' | 'A'..='F' => {
+                        if i % 2 == 1 {
+                            hex <<= 4;
+                        }
+
+                        hex |= c.to_digit(16).unwrap() as u8;
+                    }
+                    c => return Err(ParseError::InvalidCharacter(c)),
+                }
+
+                if i % 2 == 1 {
+                    if offset < EUI48LEN {
+                        eui[offset] = hex;
+                    }
+                    offset += 1;
+                    hex = 0;
+                }
+
+                i += 1;
             }
-            i += 1;
+
+            if i % 2 == 1 {
+                if offset < EUI48LEN {
+                    eui[offset] = hex;
+                }
+                offset += 1;
+            }
         }
 
-        if i != EUI48LEN {
-            return Err(ParseError::InvalidByteCount(i, eui));
+        if offset != EUI48LEN {
+            return Err(ParseError::InvalidByteCount(offset, eui));
         }
 
         Ok(MacAddress::new(eui))
@@ -299,6 +328,9 @@ impl fmt::Display for ParseError {
                 found,
                 &eui[..found]
             ),
+            ParseError::InvalidCharacter(found) => {
+                write!(f, "Invalid character; found `{}`", found)
+            }
         }
     }
 }
@@ -600,16 +632,12 @@ mod tests {
                 .to_canonical()
         );
         assert_eq!(
-            "00-00-00-00-00-00",
-            MacAddress::parse_str("!0x00000000000")
-                .unwrap()
-                .to_canonical()
+            MacAddress::parse_str("!0x00000000000"),
+            Err(InvalidCharacter('!'))
         );
         assert_eq!(
-            "00-00-00-00-00-00",
-            MacAddress::parse_str("0x00000000000!")
-                .unwrap()
-                .to_canonical()
+            MacAddress::parse_str("0x00000000000!"),
+            Err(InvalidCharacter('!'))
         );
         // Test error parsing
         assert_eq!(MacAddress::parse_str(""), Err(InvalidLength(0)));
@@ -648,7 +676,7 @@ mod tests {
         );
         assert_eq!(
             MacAddress::parse_str("0x0x0x0x0x0x0x"),
-            Err(InvalidByteCount(4, [0, 0, 0, 0, 0, 0]))
+            Err(InvalidCharacter('x'))
         );
     }
 
