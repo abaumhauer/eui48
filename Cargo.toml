@@ -40,6 +40,7 @@ gitlab = { repository = "abaumhauer/eui48", branch = "master" }
 appveyor = { repository = "abaumhauer/eui48", branch = "master", service = "github" }
 
 [features]
-default = ["rustc-serialize"]
+default = []
 disp_hexstring = []
 serde_bytes = ["serde"]
+rustc_serialize = ["rustc-serialize"]

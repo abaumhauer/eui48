@@ -681,6 +681,7 @@ mod tests {
         assert_eq!(m2, m1);
     }
 
+    #[cfg(feature = "rustc_serialize")]
     #[test]
     fn test_serialize() {
         use rustc_serialize::json;
@@ -694,6 +695,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "rustc_serialize")]
     #[test]
     fn test_deserialize() {
         use rustc_serialize::json;
@@ -709,6 +711,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "rustc_serialize")]
     #[test]
     fn test_serialize_roundtrip() {
         use rustc_serialize::json;
