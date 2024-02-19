@@ -297,7 +297,7 @@ impl fmt::Display for ParseError {
                 f,
                 "Invalid byte count; Matched `{}` bytes ({:?})",
                 found,
-                &eui[..found]
+                eui
             ),
         }
     }
@@ -744,6 +744,10 @@ mod tests {
         assert_eq!(
             "Err(InvalidByteCount(7, [18, 52, 86, 171, 205, 239]))".to_owned(),
             format!("{:?}", MacAddress::parse_str("123456ABCDEF1"))
+        );
+        assert_eq!(
+            "Invalid byte count; Matched `7` bytes ([18, 52, 86, 171, 205, 239])".to_owned(),
+            format!("{}", MacAddress::parse_str("123456ABCDEF1").unwrap_err())
         );
         assert_eq!(
             "Err(InvalidLength(19))",
