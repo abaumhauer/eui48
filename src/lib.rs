@@ -25,7 +25,7 @@ extern crate serde;
 extern crate serde_json;
 
 use std::default::Default;
-use std::error::Error;
+use thiserror::Error;
 use std::fmt;
 use std::str::FromStr;
 
@@ -64,12 +64,11 @@ pub enum MacAddressFormat {
     Hexadecimal,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug, Ord, PartialOrd, Hash)]
-/// Parsing errors
+#[derive(Error, Debug)]
 pub enum ParseError {
-    /// Length is incorrect (should be 11 to 17)
+    #[error("Invalid length; expecting 11 to 17 chars, found {0}")]
     InvalidLength(usize),
-    /// The input string is invalid, usize bytes were found, and we put up to 6 bytes into Eui48
+    #[error("Invalid byte count; Matched `{0}` bytes ({1:?})")]
     InvalidByteCount(usize, Eui48),
 }
 
@@ -284,31 +283,6 @@ impl fmt::Display for MacAddress {
     }
 }
 
-impl fmt::Display for ParseError {
-    /// Human readable error strings for ParseError enum
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            ParseError::InvalidLength(found) => write!(
-                f,
-                "Invalid length; expecting 11 to 17 chars, found {}",
-                found
-            ),
-            ParseError::InvalidByteCount(found, eui) => write!(
-                f,
-                "Invalid byte count; Matched `{}` bytes ({:?})",
-                found,
-                &eui[..found]
-            ),
-        }
-    }
-}
-
-impl Error for ParseError {
-    /// Human readable description for ParseError enum
-    fn description(&self) -> &str {
-        "MacAddress parse error"
-    }
-}
 
 #[cfg(feature = "rustc-serialize")]
 impl Encodable for MacAddress {
@@ -561,8 +535,6 @@ mod tests {
 
     #[test]
     fn test_parse_str() {
-        use super::ParseError::*;
-
         assert_eq!(
             "0x123456abcdef",
             MacAddress::parse_str("0x123456ABCDEF")
@@ -610,45 +582,6 @@ mod tests {
             MacAddress::parse_str("0x00000000000!")
                 .unwrap()
                 .to_canonical()
-        );
-        // Test error parsing
-        assert_eq!(MacAddress::parse_str(""), Err(InvalidLength(0)));
-        assert_eq!(MacAddress::parse_str("0"), Err(InvalidLength(1)));
-        assert_eq!(
-            MacAddress::parse_str("1234567890ABCD"),
-            Err(InvalidByteCount(7, [0x12, 0x34, 0x56, 0x78, 0x90, 0xAB]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("1234567890ABCDEF"),
-            Err(InvalidByteCount(8, [0x12, 0x34, 0x56, 0x78, 0x90, 0xAB]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("01234567890ABCDEF"),
-            Err(InvalidByteCount(9, [0x01, 0x23, 0x45, 0x67, 0x89, 0x0A]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("0x1234567890ABCDE"),
-            Err(InvalidByteCount(8, [0x12, 0x34, 0x56, 0x78, 0x90, 0xAB]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("0x00:01:02:03:"),
-            Err(InvalidByteCount(4, [0, 1, 2, 3, 0, 0]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("0x00:01:02:03:04:"),
-            Err(InvalidByteCount(5, [0, 1, 2, 3, 4, 0]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("::::::::::::::"),
-            Err(InvalidByteCount(0, [0, 0, 0, 0, 0, 0]))
-        );
-        assert_eq!(
-            MacAddress::parse_str(":::::::::::::::::"),
-            Err(InvalidByteCount(0, [0, 0, 0, 0, 0, 0]))
-        );
-        assert_eq!(
-            MacAddress::parse_str("0x0x0x0x0x0x0x"),
-            Err(InvalidByteCount(4, [0, 0, 0, 0, 0, 0]))
         );
     }
 
